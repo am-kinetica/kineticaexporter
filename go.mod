@@ -1,4 +1,4 @@
-module bitbucket.org/gisfederal/opentelemetry-exporter
+module github.com/am-kinetica/kineticaexporter
 
 go 1.20
 
