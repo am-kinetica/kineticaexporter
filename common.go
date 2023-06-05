@@ -308,23 +308,31 @@ func getAttributeValue(vtPair ValueTypePair) (*AttributeValue, error) {
 		value := vtPair.value.(int8)
 		av = new(AttributeValue)
 		av.SetBoolValue(value)
+	case pcommon.ValueTypeBytes:
+		value := vtPair.value.([]byte)
+		av = new(AttributeValue)
+		copy(av.BytesValue, value)
 	case pcommon.ValueTypeMap:
-		value := vtPair.value.(string)
-		av = new(AttributeValue)
-		av.SetStringValue(value)
+		// value := vtPair.value
+		// av = new(AttributeValue)
+		// av.SetStringValue(value)
+		err = fmt.Errorf("unhandled value type %v", vtPair.valueType)
+
 	case pcommon.ValueTypeSlice:
-		value := vtPair.value.(string)
-		av = new(AttributeValue)
-		av.SetStringValue(value)
+		// value := vtPair.value.(string)
+		// av = new(AttributeValue)
+		// av.SetStringValue(value)
+		err = fmt.Errorf("unhandled value type %v", vtPair.valueType)
+
 	default:
 		err = fmt.Errorf("unknown value type %v", vtPair.valueType)
 	}
 
 	if err != nil {
-		return av, nil
+		return nil, err
 	}
 
-	return nil, err
+	return av, nil
 
 }
 
