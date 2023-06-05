@@ -102,22 +102,22 @@ func (e *kineticaMetricsExporter) pushMetricsData(ctx context.Context, md pmetri
 		metrics := md.ResourceMetrics().At(i)
 		resAttr := metrics.Resource().Attributes()
 
-		e.logger.Info("Scope metrics count = %d", zap.Int("", metrics.ScopeMetrics().Len()))
+		e.logger.Info("Scope metrics count = ", zap.Int("", metrics.ScopeMetrics().Len()))
 
 		for j := 0; j < metrics.ScopeMetrics().Len(); j++ {
 			metricSlice := metrics.ScopeMetrics().At(j).Metrics()
 			scopeInstr := metrics.ScopeMetrics().At(j).Scope()
 			scopeURL := metrics.ScopeMetrics().At(j).SchemaUrl()
 
-			e.logger.Info("metrics count = %d", zap.Int("", metricSlice.Len()))
+			e.logger.Info("metrics count = ", zap.Int("", metricSlice.Len()))
 
 			for k := 0; k < metricSlice.Len(); k++ {
 
-				e.logger.Info("Gague count = %d", zap.Int("", len(gaugeRecords)))
-				e.logger.Info("Sum count = %d", zap.Int("", len(sumRecords)))
-				e.logger.Info("Histogram count = %d", zap.Int("", len(histogramRecords)))
-				e.logger.Info("Exp Histogram count = %d", zap.Int("", len(exponentialHistogramRecords)))
-				e.logger.Info("Summary count = %d", zap.Int("", len(summaryRecords)))
+				e.logger.Info("Gague count = ", zap.Int("", len(gaugeRecords)))
+				e.logger.Info("Sum count = ", zap.Int("", len(sumRecords)))
+				e.logger.Info("Histogram count = ", zap.Int("", len(histogramRecords)))
+				e.logger.Info("Exp Histogram count = ", zap.Int("", len(exponentialHistogramRecords)))
+				e.logger.Info("Summary count = ", zap.Int("", len(summaryRecords)))
 
 				metric := metricSlice.At(k)
 				metricType = metric.Type()
@@ -161,6 +161,7 @@ func (e *kineticaMetricsExporter) pushMetricsData(ctx context.Context, md pmetri
 					return fmt.Errorf("unsupported metrics type")
 				}
 				if errs != nil {
+					e.logger.Error(multierr.Combine(errs...).Error())
 					return multierr.Combine(errs...)
 				}
 			}
