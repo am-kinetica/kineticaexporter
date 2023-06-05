@@ -96,14 +96,29 @@ func (e *kineticaMetricsExporter) pushMetricsData(ctx context.Context, md pmetri
 	var exponentialHistogramRecords []kineticaExponentialHistogramRecord
 	var summaryRecords []kineticaSummaryRecord
 
+	e.logger.Info("Resource metrics count = %d", zap.Int("", md.ResourceMetrics().Len()))
+
 	for i := 0; i < md.ResourceMetrics().Len(); i++ {
 		metrics := md.ResourceMetrics().At(i)
 		resAttr := metrics.Resource().Attributes()
+
+		e.logger.Info("Scope metrics count = %d", zap.Int("", metrics.ScopeMetrics().Len()))
+
 		for j := 0; j < metrics.ScopeMetrics().Len(); j++ {
 			metricSlice := metrics.ScopeMetrics().At(j).Metrics()
 			scopeInstr := metrics.ScopeMetrics().At(j).Scope()
 			scopeURL := metrics.ScopeMetrics().At(j).SchemaUrl()
+
+			e.logger.Info("metrics count = %d", zap.Int("", metricSlice.Len()))
+
 			for k := 0; k < metricSlice.Len(); k++ {
+
+				e.logger.Info("Gague count = %d", zap.Int("", len(gaugeRecords)))
+				e.logger.Info("Sum count = %d", zap.Int("", len(sumRecords)))
+				e.logger.Info("Histogram count = %d", zap.Int("", len(histogramRecords)))
+				e.logger.Info("Exp Histogram count = %d", zap.Int("", len(exponentialHistogramRecords)))
+				e.logger.Info("Summary count = %d", zap.Int("", len(summaryRecords)))
+
 				metric := metricSlice.At(k)
 				metricType = metric.Type()
 				switch metric.Type() {
@@ -152,26 +167,38 @@ func (e *kineticaMetricsExporter) pushMetricsData(ctx context.Context, md pmetri
 		}
 	}
 
+	e.logger.Info("Before writing metrics into Kinetica")
+
 	switch metricType {
 	case pmetric.MetricTypeGauge:
 		if err := e.writer.persistGaugeRecord(gaugeRecords); err != nil {
 			errs = append(errs, err)
+		} else {
+			e.logger.Error(err.Error())
 		}
 	case pmetric.MetricTypeSum:
 		if err := e.writer.persistSumRecord(sumRecords); err != nil {
 			errs = append(errs, err)
+		} else {
+			e.logger.Error(err.Error())
 		}
 	case pmetric.MetricTypeHistogram:
 		if err := e.writer.persistHistogramRecord(histogramRecords); err != nil {
 			errs = append(errs, err)
+		} else {
+			e.logger.Error(err.Error())
 		}
 	case pmetric.MetricTypeExponentialHistogram:
 		if err := e.writer.persistExponentialHistogramRecord(exponentialHistogramRecords); err != nil {
 			errs = append(errs, err)
+		} else {
+			e.logger.Error(err.Error())
 		}
 	case pmetric.MetricTypeSummary:
 		if err := e.writer.persistSummaryRecord(summaryRecords); err != nil {
 			errs = append(errs, err)
+		} else {
+			e.logger.Error(err.Error())
 		}
 	default:
 		return fmt.Errorf("unsupported metrics type")
