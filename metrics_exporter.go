@@ -241,8 +241,12 @@ func (e *kineticaMetricsExporter) createSummaryRecord(resAttr pcommon.Map, schem
 
 		for key := range datapointAttributes {
 			vtPair := datapointAttributes[key]
-			sa := e.newSummaryDatapointAttributeValue(summary.SummaryID, summaryDatapoint.ID, key, vtPair)
-			datapointAttribute = append(datapointAttribute, *sa)
+			sa, err := e.newSummaryDatapointAttributeValue(summary.SummaryID, summaryDatapoint.ID, key, vtPair)
+			if err != nil {
+				e.logger.Error(err.Error())
+			} else {
+				datapointAttribute = append(datapointAttribute, *sa)
+			}
 		}
 		kiSummaryRecord.summaryDatapointAttribute = append(kiSummaryRecord.summaryDatapointAttribute, datapointAttribute...)
 
@@ -284,8 +288,12 @@ func (e *kineticaMetricsExporter) createSummaryRecord(resAttr pcommon.Map, schem
 
 	for key := range resourceAttributes {
 		vtPair := resourceAttributes[key]
-		ga := e.newSummaryResourceAttributeValue(summary.ResourceID, key, vtPair)
-		resourceAttribute = append(resourceAttribute, *ga)
+		ga, err := e.newSummaryResourceAttributeValue(summary.ResourceID, key, vtPair)
+		if err != nil {
+			e.logger.Error(err.Error())
+		} else {
+			resourceAttribute = append(resourceAttribute, *ga)
+		}
 	}
 
 	copy(kiSummaryRecord.summaryResourceAttribute, resourceAttribute)
@@ -310,8 +318,12 @@ func (e *kineticaMetricsExporter) createSummaryRecord(resAttr pcommon.Map, schem
 
 	for key := range scopeAttributes {
 		vtPair := scopeAttributes[key]
-		sa := e.newSummaryScopeAttributeValue(summary.ScopeID, key, scopeName, scopeVersion, vtPair)
-		scopeAttribute = append(scopeAttribute, *sa)
+		sa, err := e.newSummaryScopeAttributeValue(summary.ScopeID, key, scopeName, scopeVersion, vtPair)
+		if err != nil {
+			e.logger.Error(err.Error())
+		} else {
+			scopeAttribute = append(scopeAttribute, *sa)
+		}
 	}
 
 	copy(kiSummaryRecord.summaryScopeAttribute, scopeAttribute)
@@ -394,8 +406,12 @@ func (e *kineticaMetricsExporter) createExponentialHistogramRecord(resAttr pcomm
 
 		for key := range datapointAttributes {
 			vtPair := datapointAttributes[key]
-			sa := e.newExponentialHistogramDatapointAttributeValue(histogram.HistogramID, expHistogramDatapoint.ID, key, vtPair)
-			datapointAttribute = append(datapointAttribute, *sa)
+			sa, err := e.newExponentialHistogramDatapointAttributeValue(histogram.HistogramID, expHistogramDatapoint.ID, key, vtPair)
+			if err != nil {
+				e.logger.Error(err.Error())
+			} else {
+				datapointAttribute = append(datapointAttribute, *sa)
+			}
 		}
 		kiExpHistogramRecord.histogramDatapointAttribute = append(kiExpHistogramRecord.histogramDatapointAttribute, datapointAttribute...)
 
@@ -434,8 +450,12 @@ func (e *kineticaMetricsExporter) createExponentialHistogramRecord(resAttr pcomm
 
 			for key := range exemplarAttributes {
 				vtPair := exemplarAttributes[key]
-				ea := e.newExponentialHistogramDatapointExemplarAttributeValue(expHistogramDatapoint.HistogramID, expHistogramDatapoint.ID, sumDatapointExemplar.ExemplarID, key, vtPair)
-				exemplarAttribute = append(exemplarAttribute, *ea)
+				ea, err := e.newExponentialHistogramDatapointExemplarAttributeValue(expHistogramDatapoint.HistogramID, expHistogramDatapoint.ID, sumDatapointExemplar.ExemplarID, key, vtPair)
+				if err != nil {
+					e.logger.Error(err.Error())
+				} else {
+					exemplarAttribute = append(exemplarAttribute, *ea)
+				}
 			}
 
 			kiExpHistogramRecord.exemplarAttribute = append(kiExpHistogramRecord.exemplarAttribute, exemplarAttribute...)
@@ -489,8 +509,12 @@ func (e *kineticaMetricsExporter) createExponentialHistogramRecord(resAttr pcomm
 
 	for key := range resourceAttributes {
 		vtPair := resourceAttributes[key]
-		ga := e.newExponentialHistogramResourceAttributeValue(histogram.ResourceID, key, vtPair)
-		resourceAttribute = append(resourceAttribute, *ga)
+		ga, err := e.newExponentialHistogramResourceAttributeValue(histogram.ResourceID, key, vtPair)
+		if err != nil {
+			e.logger.Error(err.Error())
+		} else {
+			resourceAttribute = append(resourceAttribute, *ga)
+		}
 	}
 
 	copy(kiExpHistogramRecord.histogramResourceAttribute, resourceAttribute)
@@ -515,8 +539,12 @@ func (e *kineticaMetricsExporter) createExponentialHistogramRecord(resAttr pcomm
 
 	for key := range scopeAttributes {
 		vtPair := scopeAttributes[key]
-		sa := e.newExponentialHistogramScopeAttributeValue(histogram.ScopeID, key, scopeName, scopeVersion, vtPair)
-		scopeAttribute = append(scopeAttribute, *sa)
+		sa, err := e.newExponentialHistogramScopeAttributeValue(histogram.ScopeID, key, scopeName, scopeVersion, vtPair)
+		if err != nil {
+			e.logger.Error(err.Error())
+		} else {
+			scopeAttribute = append(scopeAttribute, *sa)
+		}
 	}
 
 	copy(kiExpHistogramRecord.histogramScopeAttribute, scopeAttribute)
@@ -593,8 +621,12 @@ func (e *kineticaMetricsExporter) createHistogramRecord(resAttr pcommon.Map, sch
 
 		for key := range datapointAttributes {
 			vtPair := datapointAttributes[key]
-			sa := e.newHistogramDatapointAttributeValue(histogram.HistogramID, histogramDatapoint.ID, key, vtPair)
-			datapointAttribute = append(datapointAttribute, *sa)
+			sa, err := e.newHistogramDatapointAttributeValue(histogram.HistogramID, histogramDatapoint.ID, key, vtPair)
+			if err != nil {
+				e.logger.Error(err.Error())
+			} else {
+				datapointAttribute = append(datapointAttribute, *sa)
+			}
 		}
 		kiHistogramRecord.histogramDatapointAtribute = append(kiHistogramRecord.histogramDatapointAtribute, datapointAttribute...)
 
@@ -633,8 +665,12 @@ func (e *kineticaMetricsExporter) createHistogramRecord(resAttr pcommon.Map, sch
 
 			for key := range exemplarAttributes {
 				vtPair := exemplarAttributes[key]
-				ea := e.newHistogramDatapointExemplarAttributeValue(histogramDatapoint.HistogramID, histogramDatapoint.ID, histogramDatapointExemplar.ExemplarID, key, vtPair)
-				exemplarAttribute = append(exemplarAttribute, *ea)
+				ea, err := e.newHistogramDatapointExemplarAttributeValue(histogramDatapoint.HistogramID, histogramDatapoint.ID, histogramDatapointExemplar.ExemplarID, key, vtPair)
+				if err != nil {
+					e.logger.Error(err.Error())
+				} else {
+					exemplarAttribute = append(exemplarAttribute, *ea)
+				}
 			}
 
 			kiHistogramRecord.exemplarAttribute = append(kiHistogramRecord.exemplarAttribute, exemplarAttribute...)
@@ -685,8 +721,12 @@ func (e *kineticaMetricsExporter) createHistogramRecord(resAttr pcommon.Map, sch
 
 	for key := range resourceAttributes {
 		vtPair := resourceAttributes[key]
-		ga := e.newHistogramResourceAttributeValue(histogram.ResourceID, key, vtPair)
-		resourceAttribute = append(resourceAttribute, *ga)
+		ga, err := e.newHistogramResourceAttributeValue(histogram.ResourceID, key, vtPair)
+		if err != nil {
+			e.logger.Error(err.Error())
+		} else {
+			resourceAttribute = append(resourceAttribute, *ga)
+		}
 	}
 
 	copy(kiHistogramRecord.histogramResourceAttribute, resourceAttribute)
@@ -711,8 +751,12 @@ func (e *kineticaMetricsExporter) createHistogramRecord(resAttr pcommon.Map, sch
 
 	for key := range scopeAttributes {
 		vtPair := scopeAttributes[key]
-		sa := e.newHistogramScopeAttributeValue(histogram.ScopeID, key, scopeName, scopeVersion, vtPair)
-		scopeAttribute = append(scopeAttribute, *sa)
+		sa, err := e.newHistogramScopeAttributeValue(histogram.ScopeID, key, scopeName, scopeVersion, vtPair)
+		if err != nil {
+			e.logger.Error(err.Error())
+		} else {
+			scopeAttribute = append(scopeAttribute, *sa)
+		}
 	}
 
 	copy(kiHistogramRecord.histogramScopeAttribute, scopeAttribute)
@@ -790,8 +834,12 @@ func (e *kineticaMetricsExporter) createSumRecord(resAttr pcommon.Map, schemaURL
 
 		for key := range sumDatapointAttributes {
 			vtPair := sumDatapointAttributes[key]
-			sa := e.newSumDatapointAttributeValue(sum.SumID, sumDatapoint.ID, key, vtPair)
-			sumDatapointAttribute = append(sumDatapointAttribute, *sa)
+			sa, err := e.newSumDatapointAttributeValue(sum.SumID, sumDatapoint.ID, key, vtPair)
+			if err != nil {
+				e.logger.Error(err.Error())
+			} else {
+				sumDatapointAttribute = append(sumDatapointAttribute, *sa)
+			}
 		}
 		kiSumRecord.datapointAttribute = append(kiSumRecord.datapointAttribute, sumDatapointAttribute...)
 
@@ -830,8 +878,12 @@ func (e *kineticaMetricsExporter) createSumRecord(resAttr pcommon.Map, schemaURL
 
 			for key := range exemplarAttributes {
 				vtPair := exemplarAttributes[key]
-				ea := e.newSumDatapointExemplarAttributeValue(sum.SumID, sumDatapoint.ID, sumDatapointExemplar.ExemplarID, key, vtPair)
-				exemplarAttribute = append(exemplarAttribute, *ea)
+				ea, err := e.newSumDatapointExemplarAttributeValue(sum.SumID, sumDatapoint.ID, sumDatapointExemplar.ExemplarID, key, vtPair)
+				if err != nil {
+					e.logger.Error(err.Error())
+				} else {
+					exemplarAttribute = append(exemplarAttribute, *ea)
+				}
 			}
 
 			kiSumRecord.exemplarAttribute = append(kiSumRecord.exemplarAttribute, exemplarAttribute...)
@@ -862,8 +914,12 @@ func (e *kineticaMetricsExporter) createSumRecord(resAttr pcommon.Map, schemaURL
 
 	for key := range resourceAttributes {
 		vtPair := resourceAttributes[key]
-		ga := e.newSumResourceAttributeValue(sum.ResourceID, key, vtPair)
-		resourceAttribute = append(resourceAttribute, *ga)
+		ga, err := e.newSumResourceAttributeValue(sum.ResourceID, key, vtPair)
+		if err != nil {
+			e.logger.Error(err.Error())
+		} else {
+			resourceAttribute = append(resourceAttribute, *ga)
+		}
 	}
 
 	copy(kiSumRecord.sumResourceAttribute, resourceAttribute)
@@ -888,8 +944,12 @@ func (e *kineticaMetricsExporter) createSumRecord(resAttr pcommon.Map, schemaURL
 
 	for key := range scopeAttributes {
 		vtPair := scopeAttributes[key]
-		sa := e.newSumScopeAttributeValue(sum.ScopeID, key, scopeName, scopeVersion, vtPair)
-		scopeAttribute = append(scopeAttribute, *sa)
+		sa, err := e.newSumScopeAttributeValue(sum.ScopeID, key, scopeName, scopeVersion, vtPair)
+		if err != nil {
+			e.logger.Error(err.Error())
+		} else {
+			scopeAttribute = append(scopeAttribute, *sa)
+		}
 	}
 
 	copy(kiSumRecord.sumScopeAttribute, scopeAttribute)
@@ -961,8 +1021,12 @@ func (e *kineticaMetricsExporter) createGaugeRecord(resAttr pcommon.Map, schemaU
 
 		for key := range gaugeDatapointAttributes {
 			vtPair := gaugeDatapointAttributes[key]
-			ga := e.newGaugeDatapointAttributeValue(gauge.GaugeID, gaugeDatapoint.ID, key, vtPair)
-			gaugeDatapointAttribute = append(gaugeDatapointAttribute, *ga)
+			ga, err := e.newGaugeDatapointAttributeValue(gauge.GaugeID, gaugeDatapoint.ID, key, vtPair)
+			if err != nil {
+				e.logger.Error(err.Error())
+			} else {
+				gaugeDatapointAttribute = append(gaugeDatapointAttribute, *ga)
+			}
 		}
 
 		kiGaugeRecord.datapointAttribute = append(kiGaugeRecord.datapointAttribute, gaugeDatapointAttribute...)
@@ -1001,8 +1065,12 @@ func (e *kineticaMetricsExporter) createGaugeRecord(resAttr pcommon.Map, schemaU
 
 			for key := range exemplarAttributes {
 				vtPair := exemplarAttributes[key]
-				ea := e.newGaugeDatapointExemplarAttributeValue(gauge.GaugeID, gaugeDatapoint.ID, gaugeDatapointExemplar.ExemplarID, key, vtPair)
-				exemplarAttribute = append(exemplarAttribute, *ea)
+				ea, err := e.newGaugeDatapointExemplarAttributeValue(gauge.GaugeID, gaugeDatapoint.ID, gaugeDatapointExemplar.ExemplarID, key, vtPair)
+				if err != nil {
+					e.logger.Error(err.Error())
+				} else {
+					exemplarAttribute = append(exemplarAttribute, *ea)
+				}
 			}
 
 			kiGaugeRecord.exemplarAttribute = append(kiGaugeRecord.exemplarAttribute, exemplarAttribute...)
@@ -1031,8 +1099,12 @@ func (e *kineticaMetricsExporter) createGaugeRecord(resAttr pcommon.Map, schemaU
 
 	for key := range resourceAttributes {
 		vtPair := resourceAttributes[key]
-		ga := e.newGaugeResourceAttributeValue(gauge.ResourceID, key, vtPair)
-		resourceAttribute = append(resourceAttribute, *ga)
+		ga, err := e.newGaugeResourceAttributeValue(gauge.ResourceID, key, vtPair)
+		if err != nil {
+			e.logger.Error(err.Error())
+		} else {
+			resourceAttribute = append(resourceAttribute, *ga)
+		}
 	}
 
 	copy(kiGaugeRecord.resourceAttribute, resourceAttribute)
@@ -1057,8 +1129,12 @@ func (e *kineticaMetricsExporter) createGaugeRecord(resAttr pcommon.Map, schemaU
 
 	for key := range scopeAttributes {
 		vtPair := scopeAttributes[key]
-		ga := e.newGaugeScopeAttributeValue(gauge.ScopeID, key, scopeName, scopeVersion, vtPair)
-		scopeAttribute = append(scopeAttribute, *ga)
+		ga, err := e.newGaugeScopeAttributeValue(gauge.ScopeID, key, scopeName, scopeVersion, vtPair)
+		if err != nil {
+			e.logger.Error(err.Error())
+		} else {
+			scopeAttribute = append(scopeAttribute, *ga)
+		}
 	}
 
 	copy(kiGaugeRecord.scopeAttribute, scopeAttribute)
@@ -1067,268 +1143,250 @@ func (e *kineticaMetricsExporter) createGaugeRecord(resAttr pcommon.Map, schemaU
 }
 
 // Utility functions
-func (e *kineticaMetricsExporter) newGaugeResourceAttributeValue(ResourceID, key string, vtPair ValueTypePair) *GaugeResourceAttribute {
+func (e *kineticaMetricsExporter) newGaugeResourceAttributeValue(ResourceID, key string, vtPair ValueTypePair) (*GaugeResourceAttribute, error) {
 	var av *AttributeValue
 	var err error
 
 	av, err = getAttributeValue(vtPair)
-
 	if err != nil {
-		ra := &GaugeResourceAttribute{ResourceID, key, *av}
-		return ra
+		return nil, err
 	}
 
-	return nil
+	ra := &GaugeResourceAttribute{ResourceID, key, *av}
+	return ra, nil
 }
 
-func (e *kineticaMetricsExporter) newGaugeDatapointAttributeValue(GaugeID string, DatapointID string, key string, vtPair ValueTypePair) *GaugeDatapointAttribute {
+func (e *kineticaMetricsExporter) newGaugeDatapointAttributeValue(GaugeID string, DatapointID string, key string, vtPair ValueTypePair) (*GaugeDatapointAttribute, error) {
 	var av *AttributeValue
 	var err error
 
 	av, err = getAttributeValue(vtPair)
-
 	if err != nil {
-		ga := &GaugeDatapointAttribute{GaugeID, DatapointID, key, *av}
-		return ga
+		return nil, err
 	}
 
-	return nil
+	ga := &GaugeDatapointAttribute{GaugeID, DatapointID, key, *av}
+	return ga, nil
 }
 
-func (e *kineticaMetricsExporter) newGaugeScopeAttributeValue(scopeID string, key string, scopeName string, scopeVersion string, vtPair ValueTypePair) *GaugeScopeAttribute {
+func (e *kineticaMetricsExporter) newGaugeScopeAttributeValue(scopeID string, key string, scopeName string, scopeVersion string, vtPair ValueTypePair) (*GaugeScopeAttribute, error) {
 	var av *AttributeValue
 	var err error
 
 	av, err = getAttributeValue(vtPair)
-
 	if err != nil {
-		sa := &GaugeScopeAttribute{scopeID, key, scopeName, scopeVersion, *av}
-		return sa
+		return nil, err
 	}
 
-	return nil
+	sa := &GaugeScopeAttribute{scopeID, key, scopeName, scopeVersion, *av}
+	return sa, nil
 }
 
-func (e *kineticaMetricsExporter) newSumDatapointAttributeValue(SumID string, DatapointID string, key string, vtPair ValueTypePair) *SumDataPointAttribute {
+func (e *kineticaMetricsExporter) newSumDatapointAttributeValue(SumID string, DatapointID string, key string, vtPair ValueTypePair) (*SumDataPointAttribute, error) {
 	var av *AttributeValue
 	var err error
 
 	av, err = getAttributeValue(vtPair)
-
 	if err != nil {
-		ga := &SumDataPointAttribute{SumID, DatapointID, key, *av}
-		return ga
+		return nil, err
 	}
 
-	return nil
+	ga := &SumDataPointAttribute{SumID, DatapointID, key, *av}
+	return ga, nil
 }
 
-func (e *kineticaMetricsExporter) newSumResourceAttributeValue(ResourceID, key string, vtPair ValueTypePair) *SumResourceAttribute {
+func (e *kineticaMetricsExporter) newSumResourceAttributeValue(ResourceID, key string, vtPair ValueTypePair) (*SumResourceAttribute, error) {
 	var av *AttributeValue
 	var err error
 
 	av, err = getAttributeValue(vtPair)
-
 	if err != nil {
-		ra := &SumResourceAttribute{ResourceID, key, *av}
-		return ra
+		return nil, err
 	}
 
-	return nil
+	ra := &SumResourceAttribute{ResourceID, key, *av}
+	return ra, nil
 }
 
-func (e *kineticaMetricsExporter) newSumScopeAttributeValue(scopeID string, key string, scopeName string, scopeVersion string, vtPair ValueTypePair) *SumScopeAttribute {
+func (e *kineticaMetricsExporter) newSumScopeAttributeValue(scopeID string, key string, scopeName string, scopeVersion string, vtPair ValueTypePair) (*SumScopeAttribute, error) {
 	var av *AttributeValue
 	var err error
 
 	av, err = getAttributeValue(vtPair)
-
 	if err != nil {
-		sa := &SumScopeAttribute{scopeID, key, scopeName, scopeVersion, *av}
-		return sa
+		return nil, err
 	}
 
-	return nil
+	sa := &SumScopeAttribute{scopeID, key, scopeName, scopeVersion, *av}
+	return sa, nil
 }
 
-func (e *kineticaMetricsExporter) newSumDatapointExemplarAttributeValue(sumID string, sumDatapointID string, sumDatapointExemplarID string, key string, vtPair ValueTypePair) *SumDataPointExemplarAttribute {
+func (e *kineticaMetricsExporter) newSumDatapointExemplarAttributeValue(sumID string, sumDatapointID string, sumDatapointExemplarID string, key string, vtPair ValueTypePair) (*SumDataPointExemplarAttribute, error) {
 	var av *AttributeValue
 	var err error
 
 	av, err = getAttributeValue(vtPair)
-
 	if err != nil {
-		sa := &SumDataPointExemplarAttribute{sumID, sumDatapointID, sumDatapointExemplarID, key, *av}
-		return sa
+		return nil, err
 	}
 
-	return nil
+	sa := &SumDataPointExemplarAttribute{sumID, sumDatapointID, sumDatapointExemplarID, key, *av}
+	return sa, nil
 }
 
-func (e *kineticaMetricsExporter) newExponentialHistogramDatapointExemplarAttributeValue(histogramID string, histogramDatapointID string, histogramDatapointExemplarID string, key string, vtPair ValueTypePair) *ExponentialHistogramDataPointExemplarAttribute {
+func (e *kineticaMetricsExporter) newExponentialHistogramDatapointExemplarAttributeValue(histogramID string, histogramDatapointID string, histogramDatapointExemplarID string, key string, vtPair ValueTypePair) (*ExponentialHistogramDataPointExemplarAttribute, error) {
 	var av *AttributeValue
 	var err error
 
 	av, err = getAttributeValue(vtPair)
-
 	if err != nil {
-		sa := &ExponentialHistogramDataPointExemplarAttribute{histogramID, histogramDatapointID, histogramDatapointExemplarID, key, *av}
-		return sa
+		return nil, err
 	}
 
-	return nil
+	sa := &ExponentialHistogramDataPointExemplarAttribute{histogramID, histogramDatapointID, histogramDatapointExemplarID, key, *av}
+	return sa, nil
 }
 
-func (e *kineticaMetricsExporter) newExponentialHistogramDatapointAttributeValue(HistogramID string, DatapointID string, key string, vtPair ValueTypePair) *ExponentialHistogramDataPointAttribute {
+func (e *kineticaMetricsExporter) newExponentialHistogramDatapointAttributeValue(HistogramID string, DatapointID string, key string, vtPair ValueTypePair) (*ExponentialHistogramDataPointAttribute, error) {
 	var av *AttributeValue
 	var err error
 
 	av, err = getAttributeValue(vtPair)
-
 	if err != nil {
-		ga := &ExponentialHistogramDataPointAttribute{HistogramID, DatapointID, key, *av}
-		return ga
+		return nil, err
 	}
 
-	return nil
+	ga := &ExponentialHistogramDataPointAttribute{HistogramID, DatapointID, key, *av}
+	return ga, nil
 }
 
-func (e *kineticaMetricsExporter) newHistogramDatapointExemplarAttributeValue(HistogramID string, DatapointID string, ExemplarID string, key string, vtPair ValueTypePair) *HistogramDataPointExemplarAttribute {
+func (e *kineticaMetricsExporter) newHistogramDatapointExemplarAttributeValue(HistogramID string, DatapointID string, ExemplarID string, key string, vtPair ValueTypePair) (*HistogramDataPointExemplarAttribute, error) {
 	var av *AttributeValue
 	var err error
 
 	av, err = getAttributeValue(vtPair)
-
 	if err != nil {
-		ga := &HistogramDataPointExemplarAttribute{HistogramID, DatapointID, ExemplarID, key, *av}
-		return ga
+		return nil, err
 	}
 
-	return nil
+	ga := &HistogramDataPointExemplarAttribute{HistogramID, DatapointID, ExemplarID, key, *av}
+	return ga, nil
 }
 
-func (e *kineticaMetricsExporter) newGaugeDatapointExemplarAttributeValue(gaugeID string, gaugeDatapointID string, gaugeDatapointExemplarID string, key string, vtPair ValueTypePair) *GaugeDataPointExemplarAttribute {
+func (e *kineticaMetricsExporter) newGaugeDatapointExemplarAttributeValue(gaugeID string, gaugeDatapointID string, gaugeDatapointExemplarID string, key string, vtPair ValueTypePair) (*GaugeDataPointExemplarAttribute, error) {
 	var av *AttributeValue
 	var err error
 
 	av, err = getAttributeValue(vtPair)
-
 	if err != nil {
-		sa := &GaugeDataPointExemplarAttribute{gaugeID, gaugeDatapointID, gaugeDatapointExemplarID, key, *av}
-		return sa
+		return nil, err
 	}
 
-	return nil
+	sa := &GaugeDataPointExemplarAttribute{gaugeID, gaugeDatapointID, gaugeDatapointExemplarID, key, *av}
+	return sa, nil
 }
 
-func (e *kineticaMetricsExporter) newHistogramResourceAttributeValue(ResourceID, key string, vtPair ValueTypePair) *HistogramResourceAttribute {
+func (e *kineticaMetricsExporter) newHistogramResourceAttributeValue(ResourceID, key string, vtPair ValueTypePair) (*HistogramResourceAttribute, error) {
 	var av *AttributeValue
 	var err error
 
 	av, err = getAttributeValue(vtPair)
-
 	if err != nil {
-		ra := &HistogramResourceAttribute{ResourceID, key, *av}
-		return ra
+		return nil, err
 	}
 
-	return nil
+	ra := &HistogramResourceAttribute{ResourceID, key, *av}
+	return ra, nil
 }
 
-func (e *kineticaMetricsExporter) newHistogramScopeAttributeValue(scopeID string, key string, scopeName string, scopeVersion string, vtPair ValueTypePair) *HistogramScopeAttribute {
+func (e *kineticaMetricsExporter) newHistogramScopeAttributeValue(scopeID string, key string, scopeName string, scopeVersion string, vtPair ValueTypePair) (*HistogramScopeAttribute, error) {
 	var av *AttributeValue
 	var err error
 
 	av, err = getAttributeValue(vtPair)
-
 	if err != nil {
-		sa := &HistogramScopeAttribute{scopeID, key, scopeName, scopeVersion, *av}
-		return sa
+		return nil, err
 	}
 
-	return nil
+	sa := &HistogramScopeAttribute{scopeID, key, scopeName, scopeVersion, *av}
+	return sa, nil
 }
 
-func (e *kineticaMetricsExporter) newExponentialHistogramResourceAttributeValue(ResourceID, key string, vtPair ValueTypePair) *ExponentialHistogramResourceAttribute {
+func (e *kineticaMetricsExporter) newExponentialHistogramResourceAttributeValue(ResourceID, key string, vtPair ValueTypePair) (*ExponentialHistogramResourceAttribute, error) {
 	var av *AttributeValue
 	var err error
 
 	av, err = getAttributeValue(vtPair)
-
 	if err != nil {
-		ra := &ExponentialHistogramResourceAttribute{ResourceID, key, *av}
-		return ra
+		return nil, err
 	}
 
-	return nil
+	ra := &ExponentialHistogramResourceAttribute{ResourceID, key, *av}
+	return ra, nil
 }
 
-func (e *kineticaMetricsExporter) newExponentialHistogramScopeAttributeValue(scopeID string, key string, scopeName string, scopeVersion string, vtPair ValueTypePair) *ExponentialHistogramScopeAttribute {
+func (e *kineticaMetricsExporter) newExponentialHistogramScopeAttributeValue(scopeID string, key string, scopeName string, scopeVersion string, vtPair ValueTypePair) (*ExponentialHistogramScopeAttribute, error) {
 	var av *AttributeValue
 	var err error
 
 	av, err = getAttributeValue(vtPair)
-
 	if err != nil {
-		sa := &ExponentialHistogramScopeAttribute{scopeID, key, scopeName, scopeVersion, *av}
-		return sa
+		return nil, err
 	}
 
-	return nil
+	sa := &ExponentialHistogramScopeAttribute{scopeID, key, scopeName, scopeVersion, *av}
+	return sa, nil
 }
 
-func (e *kineticaMetricsExporter) newSummaryResourceAttributeValue(ResourceID, key string, vtPair ValueTypePair) *SummaryResourceAttribute {
+func (e *kineticaMetricsExporter) newSummaryResourceAttributeValue(ResourceID, key string, vtPair ValueTypePair) (*SummaryResourceAttribute, error) {
 	var av *AttributeValue
 	var err error
 
 	av, err = getAttributeValue(vtPair)
-
 	if err != nil {
-		ra := &SummaryResourceAttribute{ResourceID, key, *av}
-		return ra
+		return nil, err
 	}
 
-	return nil
+	ra := &SummaryResourceAttribute{ResourceID, key, *av}
+	return ra, nil
 }
 
-func (e *kineticaMetricsExporter) newSummaryScopeAttributeValue(scopeID string, key string, scopeName string, scopeVersion string, vtPair ValueTypePair) *SummaryScopeAttribute {
+func (e *kineticaMetricsExporter) newSummaryScopeAttributeValue(scopeID string, key string, scopeName string, scopeVersion string, vtPair ValueTypePair) (*SummaryScopeAttribute, error) {
 	var av *AttributeValue
 	var err error
 
 	av, err = getAttributeValue(vtPair)
-
 	if err != nil {
-		sa := &SummaryScopeAttribute{scopeID, key, scopeName, scopeVersion, *av}
-		return sa
+		return nil, err
 	}
 
-	return nil
+	sa := &SummaryScopeAttribute{scopeID, key, scopeName, scopeVersion, *av}
+	return sa, nil
+
 }
 
-func (e *kineticaMetricsExporter) newSummaryDatapointAttributeValue(summaryID string, summaryDatapointID string, key string, vtPair ValueTypePair) *SummaryDataPointAttribute {
+func (e *kineticaMetricsExporter) newSummaryDatapointAttributeValue(summaryID string, summaryDatapointID string, key string, vtPair ValueTypePair) (*SummaryDataPointAttribute, error) {
 	var av *AttributeValue
 	var err error
 
 	av, err = getAttributeValue(vtPair)
-
 	if err != nil {
-		sa := &SummaryDataPointAttribute{summaryID, summaryDatapointID, key, *av}
-		return sa
+		return nil, err
 	}
 
-	return nil
+	sa := &SummaryDataPointAttribute{summaryID, summaryDatapointID, key, *av}
+	return sa, nil
 }
 
-func (e *kineticaMetricsExporter) newHistogramDatapointAttributeValue(HistogramID string, DatapointID string, key string, vtPair ValueTypePair) *HistogramDataPointAttribute {
+func (e *kineticaMetricsExporter) newHistogramDatapointAttributeValue(HistogramID string, DatapointID string, key string, vtPair ValueTypePair) (*HistogramDataPointAttribute, error) {
 	var av *AttributeValue
 	var err error
 
 	av, err = getAttributeValue(vtPair)
-
 	if err != nil {
-		ga := &HistogramDataPointAttribute{HistogramID, DatapointID, key, *av}
-		return ga
+		return nil, err
 	}
 
-	return nil
+	ga := &HistogramDataPointAttribute{HistogramID, DatapointID, key, *av}
+	return ga, nil
 }
