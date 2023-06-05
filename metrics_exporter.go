@@ -96,28 +96,28 @@ func (e *kineticaMetricsExporter) pushMetricsData(ctx context.Context, md pmetri
 	var exponentialHistogramRecords []kineticaExponentialHistogramRecord
 	var summaryRecords []kineticaSummaryRecord
 
-	e.logger.Info("Resource metrics count = %d", zap.Int("", md.ResourceMetrics().Len()))
+	e.logger.Info("Resource metrics ", zap.Int("count = ", md.ResourceMetrics().Len()))
 
 	for i := 0; i < md.ResourceMetrics().Len(); i++ {
 		metrics := md.ResourceMetrics().At(i)
 		resAttr := metrics.Resource().Attributes()
 
-		e.logger.Info("Scope metrics count = ", zap.Int("", metrics.ScopeMetrics().Len()))
+		e.logger.Info("Scope metrics ", zap.Int("count = ", metrics.ScopeMetrics().Len()))
 
 		for j := 0; j < metrics.ScopeMetrics().Len(); j++ {
 			metricSlice := metrics.ScopeMetrics().At(j).Metrics()
 			scopeInstr := metrics.ScopeMetrics().At(j).Scope()
 			scopeURL := metrics.ScopeMetrics().At(j).SchemaUrl()
 
-			e.logger.Info("metrics count = ", zap.Int("", metricSlice.Len()))
+			e.logger.Info("metrics ", zap.Int("count = ", metricSlice.Len()))
 
 			for k := 0; k < metricSlice.Len(); k++ {
 
-				e.logger.Info("Gague count = ", zap.Int("", len(gaugeRecords)))
-				e.logger.Info("Sum count = ", zap.Int("", len(sumRecords)))
-				e.logger.Info("Histogram count = ", zap.Int("", len(histogramRecords)))
-				e.logger.Info("Exp Histogram count = ", zap.Int("", len(exponentialHistogramRecords)))
-				e.logger.Info("Summary count = ", zap.Int("", len(summaryRecords)))
+				e.logger.Info("Gague ", zap.Int("count = ", len(gaugeRecords)))
+				e.logger.Info("Sum ", zap.Int("count = ", len(sumRecords)))
+				e.logger.Info("Histogram ", zap.Int("count = ", len(histogramRecords)))
+				e.logger.Info("Exp Histogram ", zap.Int("count = ", len(exponentialHistogramRecords)))
+				e.logger.Info("Summary ", zap.Int("count = ", len(summaryRecords)))
 
 				metric := metricSlice.At(k)
 				metricType = metric.Type()
@@ -126,35 +126,45 @@ func (e *kineticaMetricsExporter) pushMetricsData(ctx context.Context, md pmetri
 					gaugeRecord, err := e.createGaugeRecord(resAttr, metrics.SchemaUrl(), scopeInstr, scopeURL, metric.Gauge(), metric.Name(), metric.Description(), metric.Unit())
 					if err != nil {
 						gaugeRecords = append(gaugeRecords, *gaugeRecord)
+						e.logger.Info("Added gauge")
 					} else {
+						e.logger.Error(err.Error())
 						errs = append(errs, err)
 					}
 				case pmetric.MetricTypeSum:
 					sumRecord, err := e.createSumRecord(resAttr, metrics.SchemaUrl(), scopeInstr, scopeURL, metric.Sum(), metric.Name(), metric.Description(), metric.Unit())
 					if err != nil {
 						sumRecords = append(sumRecords, *sumRecord)
+						e.logger.Info("Added sum")
 					} else {
+						e.logger.Error(err.Error())
 						errs = append(errs, err)
 					}
 				case pmetric.MetricTypeHistogram:
 					histogramRecord, err := e.createHistogramRecord(resAttr, metrics.SchemaUrl(), scopeInstr, scopeURL, metric.Histogram(), metric.Name(), metric.Description(), metric.Unit())
 					if err != nil {
 						histogramRecords = append(histogramRecords, *histogramRecord)
+						e.logger.Info("Added histogram")
 					} else {
+						e.logger.Error(err.Error())
 						errs = append(errs, err)
 					}
 				case pmetric.MetricTypeExponentialHistogram:
 					exponentialHistogramRecord, err := e.createExponentialHistogramRecord(resAttr, metrics.SchemaUrl(), scopeInstr, scopeURL, metric.ExponentialHistogram(), metric.Name(), metric.Description(), metric.Unit())
 					if err != nil {
 						exponentialHistogramRecords = append(exponentialHistogramRecords, *exponentialHistogramRecord)
+						e.logger.Info("Added exp histogram")
 					} else {
+						e.logger.Error(err.Error())
 						errs = append(errs, err)
 					}
 				case pmetric.MetricTypeSummary:
 					summaryRecord, err := e.createSummaryRecord(resAttr, metrics.SchemaUrl(), scopeInstr, scopeURL, metric.Summary(), metric.Name(), metric.Description(), metric.Unit())
 					if err != nil {
 						summaryRecords = append(summaryRecords, *summaryRecord)
+						e.logger.Info("Added summary")
 					} else {
+						e.logger.Error(err.Error())
 						errs = append(errs, err)
 					}
 				default:
