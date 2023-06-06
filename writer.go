@@ -1421,7 +1421,7 @@ type HistogramDatapoint struct {
 	ID            string  `avro:"id"`
 	StartTimeUnix string  `avro:"start_time_unix"`
 	TimeUnix      string  `avro:"time_unix"`
-	Count         uint64  `avro:"count"`
+	Count         int64   `avro:"count"`
 	Sum           float64 `avro:"data_sum"`
 	Min           float64 `avro:"data_min"`
 	Max           float64 `avro:"data_max"`
@@ -1440,7 +1440,7 @@ type HistogramDatapointBucketCount struct {
 	HistogramID string `avro:"histogram_id"`
 	DatapointID string `avro:"datapoint_id"`
 	CountID     string `avro:"count_id"`
-	Count       uint64 `avro:"count"`
+	Count       int64  `avro:"count"`
 }
 
 type HistogramDatapointExplicitBound struct {
@@ -1506,13 +1506,13 @@ type ExponentialHistogramDatapoint struct {
 	ID                    string  `avro:"id"`
 	StartTimeUnix         string  `avro:"start_time_unix"`
 	TimeUnix              string  `avro:"time_unix"`
-	Count                 uint64  `avro:"count"`
+	Count                 int64   `avro:"count"`
 	Sum                   float64 `avro:"data_sum"`
 	Min                   float64 `avro:"data_min"`
 	Max                   float64 `avro:"data_max"`
 	Flags                 int     `avro:"flags"`
 	Scale                 int     `avro:"scale"`
-	ZeroCount             uint64  `avro:"zero_count"`
+	ZeroCount             int64   `avro:"zero_count"`
 	BucketsPositiveOffset int     `avro:"buckets_positive_offset"`
 	BucketsNegativeOffset int     `avro:"buckets_negative_offset"`
 }
@@ -1535,7 +1535,7 @@ type ExponentialHistogramBucketPositiveCount struct {
 	HistogramID string `avro:"histogram_id"`
 	DatapointID string `avro:"datapoint_id"`
 	CountID     string `avro:"count_id"`
-	Count       uint64 `avro:"count"`
+	Count       int64  `avro:"count"`
 }
 
 type ExponentialHistogramDatapointExemplar struct {
@@ -1592,7 +1592,7 @@ type SummaryDatapoint struct {
 	ID            string  `avro:"id"`
 	StartTimeUnix string  `avro:"start_time_unix"`
 	TimeUnix      string  `avro:"time_unix"`
-	Count         uint64  `avro:"count"`
+	Count         int64   `avro:"count"`
 	Sum           float64 `avro:"sum"`
 	Flags         int     `avro:"flags"`
 }

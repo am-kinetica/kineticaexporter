@@ -254,7 +254,7 @@ func (e *kineticaMetricsExporter) createSummaryRecord(resAttr pcommon.Map, schem
 			ID:            uuid.New().String(),
 			StartTimeUnix: strconv.Itoa(int(datapoint.StartTimestamp().AsTime().Unix())),
 			TimeUnix:      strconv.Itoa(int(datapoint.Timestamp().AsTime().Unix())),
-			Count:         datapoint.Count(),
+			Count:         int64(datapoint.Count()),
 			Sum:           datapoint.Sum(),
 			Flags:         int(datapoint.Flags()),
 		}
@@ -413,13 +413,13 @@ func (e *kineticaMetricsExporter) createExponentialHistogramRecord(resAttr pcomm
 			ID:                    uuid.New().String(),
 			StartTimeUnix:         strconv.Itoa(int(datapoint.StartTimestamp().AsTime().Unix())),
 			TimeUnix:              strconv.Itoa(int(datapoint.Timestamp().AsTime().Unix())),
-			Count:                 datapoint.Count(),
+			Count:                 int64(datapoint.Count()),
 			Sum:                   datapoint.Sum(),
 			Min:                   datapoint.Min(),
 			Max:                   datapoint.Max(),
 			Flags:                 int(datapoint.Flags()),
 			Scale:                 int(datapoint.Scale()),
-			ZeroCount:             datapoint.ZeroCount(),
+			ZeroCount:             int64(datapoint.ZeroCount()),
 			BucketsPositiveOffset: int(datapoint.Positive().Offset()),
 			BucketsNegativeOffset: int(datapoint.Negative().Offset()),
 		}
@@ -507,7 +507,7 @@ func (e *kineticaMetricsExporter) createExponentialHistogramRecord(resAttr pcomm
 				HistogramID: expHistogramDatapoint.HistogramID,
 				DatapointID: expHistogramDatapoint.ID,
 				CountID:     uuid.New().String(),
-				Count:       positiveBucketCount,
+				Count:       int64(positiveBucketCount),
 			})
 		}
 		kiExpHistogramRecord.histogramBucketPositiveCount = append(kiExpHistogramRecord.histogramBucketPositiveCount, datapointBucketPositiveCount...)
@@ -635,7 +635,7 @@ func (e *kineticaMetricsExporter) createHistogramRecord(resAttr pcommon.Map, sch
 			ID:            uuid.New().String(),
 			StartTimeUnix: strconv.Itoa(int(datapoint.StartTimestamp().AsTime().Unix())),
 			TimeUnix:      strconv.Itoa(int(datapoint.Timestamp().AsTime().Unix())),
-			Count:         datapoint.Count(),
+			Count:         int64(datapoint.Count()),
 			Sum:           datapoint.Sum(),
 			Min:           datapoint.Min(),
 			Max:           datapoint.Max(),
@@ -723,7 +723,7 @@ func (e *kineticaMetricsExporter) createHistogramRecord(resAttr pcommon.Map, sch
 				HistogramID: histogramDatapoint.HistogramID,
 				DatapointID: histogramDatapoint.ID,
 				CountID:     uuid.New().String(),
-				Count:       histogramBucketCounts.At(i),
+				Count:       int64(histogramBucketCounts.At(i)),
 			}
 			kiHistogramRecord.histogramBucketCount = append(kiHistogramRecord.histogramBucketCount, bucketCount)
 		}
