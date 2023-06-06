@@ -1325,7 +1325,7 @@ type GaugeResourceAttribute struct {
 // GaugeScopeAttribute
 type GaugeScopeAttribute struct {
 	ScopeID        string `avro:"scope_id"`
-	ScopeName      string `avro:"scope_name"`
+	ScopeName      string `avro:"name"`
 	ScopeVersion   string `avro:"scope_version"`
 	Key            string `avro:"key"`
 	AttributeValue `mapstructure:",squash"`
@@ -1394,7 +1394,7 @@ type SumResourceAttribute struct {
 // SumScopeAttribute
 type SumScopeAttribute struct {
 	ScopeID        string `avro:"scope_id"`
-	ScopeName      string `avro:"scope_name"`
+	ScopeName      string `avro:"name"`
 	ScopeVersion   string `avro:"scope_version"`
 	Key            string `avro:"key"`
 	AttributeValue `mapstructure:",squash"`
@@ -1480,7 +1480,7 @@ type HistogramResourceAttribute struct {
 // HistogramScopeAttribute
 type HistogramScopeAttribute struct {
 	ScopeID        string `avro:"scope_id"`
-	ScopeName      string `avro:"scope_name"`
+	ScopeName      string `avro:"name"`
 	ScopeVersion   string `avro:"scope_version"`
 	Key            string `avro:"key"`
 	AttributeValue `mapstructure:",squash"`
@@ -1567,7 +1567,7 @@ type ExponentialHistogramResourceAttribute struct {
 // HistogramScopeAttribute
 type ExponentialHistogramScopeAttribute struct {
 	ScopeID        string `avro:"scope_id"`
-	ScopeName      string `avro:"scope_name"`
+	ScopeName      string `avro:"name"`
 	ScopeVersion   string `avro:"scope_version"`
 	Key            string `avro:"key"`
 	AttributeValue `mapstructure:",squash"`
@@ -1623,7 +1623,7 @@ type SummaryResourceAttribute struct {
 // SummaryScopeAttribute
 type SummaryScopeAttribute struct {
 	ScopeID        string `avro:"scope_id"`
-	ScopeName      string `avro:"scope_name"`
+	ScopeName      string `avro:"name"`
 	ScopeVersion   string `avro:"scope_version"`
 	Key            string `avro:"key"`
 	AttributeValue `mapstructure:",squash"`
