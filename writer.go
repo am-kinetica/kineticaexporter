@@ -1986,7 +1986,7 @@ func (kiwriter *KiWriter) doChunkedInsert(ctx context.Context, tableName string,
 	// Build the final table name with the schema prepended
 	var finalTable string
 	if len(kiwriter.cfg.Schema) != 0 {
-		finalTable = fmt.Sprintf("\"%s\".%s", kiwriter.cfg.Schema, tableName)
+		finalTable = fmt.Sprintf("%s.%s", kiwriter.cfg.Schema, tableName)
 	} else {
 		finalTable = tableName
 	}
