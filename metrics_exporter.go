@@ -1116,6 +1116,8 @@ func (e *kineticaMetricsExporter) createGaugeRecord(resAttr pcommon.Map, schemaU
 	}
 
 	// Handle Resource attribute
+	e.logger.Info("Resource Attributes received ->", zap.Any("Attributes", resAttr))
+
 	var resourceAttribute []GaugeResourceAttribute
 	resourceAttributes := make(map[string]ValueTypePair)
 
@@ -1131,9 +1133,13 @@ func (e *kineticaMetricsExporter) createGaugeRecord(resAttr pcommon.Map, schemaU
 		return true
 	})
 
+	e.logger.Info("Resource Attributes to be added ->", zap.Any("Attributes", resourceAttributes))
 	for key := range resourceAttributes {
 		vtPair := resourceAttributes[key]
 		ga, err := e.newGaugeResourceAttributeValue(gauge.ResourceID, key, vtPair)
+
+		e.logger.Info("New resource attribute ->", zap.Any("Attribute", ga))
+
 		if err != nil {
 			e.logger.Error(err.Error())
 		} else {
@@ -1142,8 +1148,11 @@ func (e *kineticaMetricsExporter) createGaugeRecord(resAttr pcommon.Map, schemaU
 	}
 
 	copy(kiGaugeRecord.resourceAttribute, resourceAttribute)
+	e.logger.Info("Resource Attributes actually added ->", zap.Any("Attributes", kiGaugeRecord.resourceAttribute))
 
 	// Handle Scope attribute
+	e.logger.Info("Scope Attributes received ->", zap.Any("Attributes", scopeInstr.Attributes()))
+
 	var scopeAttribute []GaugeScopeAttribute
 	scopeAttributes := make(map[string]ValueTypePair)
 	scopeName := scopeInstr.Name()
@@ -1161,9 +1170,13 @@ func (e *kineticaMetricsExporter) createGaugeRecord(resAttr pcommon.Map, schemaU
 		return true
 	})
 
+	e.logger.Info("Scope Attributes to be added ->", zap.Any("Attributes", scopeAttributes))
 	for key := range scopeAttributes {
 		vtPair := scopeAttributes[key]
 		ga, err := e.newGaugeScopeAttributeValue(gauge.ScopeID, key, scopeName, scopeVersion, vtPair)
+
+		e.logger.Info("New scope attribute ->", zap.Any("Attribute", ga))
+
 		if err != nil {
 			e.logger.Error(err.Error())
 		} else {
@@ -1172,6 +1185,7 @@ func (e *kineticaMetricsExporter) createGaugeRecord(resAttr pcommon.Map, schemaU
 	}
 
 	copy(kiGaugeRecord.scopeAttribute, scopeAttribute)
+	e.logger.Info("Scope Attributes actually added ->", zap.Any("Attributes", kiGaugeRecord.scopeAttribute))
 
 	return kiGaugeRecord, multierr.Combine(errs...)
 }
