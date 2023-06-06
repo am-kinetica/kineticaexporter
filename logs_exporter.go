@@ -37,7 +37,7 @@ func newLogsExporter(logger *zap.Logger, cfg *Config) (*kineticaLogsExporter, er
 		return nil, err
 	}
 
-	writer := NewKiWriter(context.TODO(), *cfg)
+	writer := NewKiWriter(context.TODO(), *cfg, logger)
 	logsExp := &kineticaLogsExporter{
 		logger: logger,
 		writer: writer,
