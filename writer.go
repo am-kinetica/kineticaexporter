@@ -1281,7 +1281,7 @@ type Gauge struct {
 type GaugeDatapoint struct {
 	GaugeID       string  `avro:"gauge_id"`
 	ID            string  `avro:"id"`
-	StartTimeUnix string  `mapstructure:"start_time_unix" avro:"time_unix"`
+	StartTimeUnix string  `mapstructure:"start_time_unix" avro:"start_time_unix"`
 	TimeUnix      string  `mapstructure:"time_unix" avro:"time_unix"`
 	GaugeValue    float64 `mapstructure:"gauge_value" avro:"gauge_value"`
 	Flags         int     `mapstructure:"flags" avro:"flags"`
@@ -1351,7 +1351,7 @@ type Sum struct {
 type SumDatapoint struct {
 	SumID         string  `avro:"sum_id"`
 	ID            string  `avro:"id"`
-	StartTimeUnix string  `mapstructure:"start_time_unix" avro:"time_unix"`
+	StartTimeUnix string  `mapstructure:"start_time_unix" avro:"start_time_unix"`
 	TimeUnix      string  `mapstructure:"time_unix" avro:"time_unix"`
 	SumValue      float64 `mapstructure:"sum_value" avro:"sum_value"`
 	Flags         int     `mapstructure:"flags" avro:"flags"`
@@ -1419,7 +1419,7 @@ type Histogram struct {
 type HistogramDatapoint struct {
 	HistogramID   string  `avro:"histogram_id"`
 	ID            string  `avro:"id"`
-	StartTimeUnix string  `avro:"time_unix"`
+	StartTimeUnix string  `avro:"start_time_unix"`
 	TimeUnix      string  `avro:"time_unix"`
 	Count         uint64  `avro:"count"`
 	Sum           float64 `avro:"data_sum"`
@@ -1504,7 +1504,7 @@ type ExponentialHistogram struct {
 type ExponentialHistogramDatapoint struct {
 	HistogramID           string  `avro:"histogram_id"`
 	ID                    string  `avro:"id"`
-	StartTimeUnix         string  `avro:"time_unix"`
+	StartTimeUnix         string  `avro:"start_time_unix"`
 	TimeUnix              string  `avro:"time_unix"`
 	Count                 uint64  `avro:"count"`
 	Sum                   float64 `avro:"data_sum"`
@@ -1590,7 +1590,7 @@ type Summary struct {
 type SummaryDatapoint struct {
 	SummaryID     string  `avro:"summary_id"`
 	ID            string  `avro:"id"`
-	StartTimeUnix string  `avro:"time_unix"`
+	StartTimeUnix string  `avro:"start_time_unix"`
 	TimeUnix      string  `avro:"time_unix"`
 	Count         uint64  `avro:"count"`
 	Sum           float64 `avro:"sum"`
@@ -2029,7 +2029,7 @@ func (kiwriter *KiWriter) doChunkedInsert(ctx context.Context, tableName string,
 		finalTable = tableName
 	}
 
-	kiwriter.logger.Info("Writing to - ", zap.String("Table", finalTable))
+	kiwriter.logger.Info("Writing to - ", zap.String("Table", finalTable), zap.Int("Recoord count", len(records)))
 
 	recordChunks := ChunkBySize(records, ChunkSize)
 
