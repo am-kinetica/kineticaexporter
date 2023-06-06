@@ -8,6 +8,7 @@ import (
 	"bitbucket.org/gisfederal/gpudb-api-go/gpudb"
 	"github.com/google/uuid"
 	"go.uber.org/multierr"
+	"go.uber.org/zap"
 )
 
 // AttributeValue
@@ -453,6 +454,7 @@ type KiWriter struct {
 	Db      gpudb.Gpudb
 	Options gpudb.GpudbOptions
 	cfg     Config
+	logger  *zap.Logger
 }
 
 // GetDb
@@ -519,7 +521,7 @@ func init() {
 	config := cfg.(*Config)
 	options := gpudb.GpudbOptions{Username: config.Username, Password: config.Password, ByPassSslCertCheck: config.BypassSslCertCheck}
 	gpudbInst := gpudb.NewWithOptions(ctx, config.Host, &options)
-	Writer = &KiWriter{*gpudbInst, options, *config}
+	Writer = &KiWriter{*gpudbInst, options, *config, nil}
 }
 
 // NewKiWriter
@@ -527,10 +529,10 @@ func init() {
 //	@param ctx
 //	@param cfg
 //	@return *KiWriter
-func NewKiWriter(ctx context.Context, cfg Config) *KiWriter {
+func NewKiWriter(ctx context.Context, cfg Config, logger *zap.Logger) *KiWriter {
 	options := gpudb.GpudbOptions{Username: cfg.Username, Password: cfg.Password, ByPassSslCertCheck: cfg.BypassSslCertCheck}
 	gpudbInst := gpudb.NewWithOptions(ctx, cfg.Host, &options)
-	return &KiWriter{*gpudbInst, options, cfg}
+	return &KiWriter{*gpudbInst, options, cfg, logger}
 }
 
 // GetGpuDbInst
