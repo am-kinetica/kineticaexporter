@@ -113,12 +113,6 @@ func (e *kineticaMetricsExporter) pushMetricsData(ctx context.Context, md pmetri
 
 			for k := 0; k < metricSlice.Len(); k++ {
 
-				e.logger.Info("Gague ", zap.Int("count = ", len(gaugeRecords)))
-				e.logger.Info("Sum ", zap.Int("count = ", len(sumRecords)))
-				e.logger.Info("Histogram ", zap.Int("count = ", len(histogramRecords)))
-				e.logger.Info("Exp Histogram ", zap.Int("count = ", len(exponentialHistogramRecords)))
-				e.logger.Info("Summary ", zap.Int("count = ", len(summaryRecords)))
-
 				metric := metricSlice.At(k)
 				metricType = metric.Type()
 				switch metric.Type() {
@@ -170,6 +164,12 @@ func (e *kineticaMetricsExporter) pushMetricsData(ctx context.Context, md pmetri
 				default:
 					return fmt.Errorf("unsupported metrics type")
 				}
+
+				e.logger.Info("Gague ", zap.Int("count = ", len(gaugeRecords)))
+				e.logger.Info("Sum ", zap.Int("count = ", len(sumRecords)))
+				e.logger.Info("Histogram ", zap.Int("count = ", len(histogramRecords)))
+				e.logger.Info("Exp Histogram ", zap.Int("count = ", len(exponentialHistogramRecords)))
+				e.logger.Info("Summary ", zap.Int("count = ", len(summaryRecords)))
 
 				if errs != nil && len(errs) > 0 {
 					e.logger.Error(multierr.Combine(errs...).Error())

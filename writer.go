@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sync"
 
-	"bitbucket.org/gisfederal/gpudb-api-go/gpudb"
+	"github.com/am-kinetica/gpudb-api-go/gpudb"
 	"github.com/google/uuid"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
@@ -1736,6 +1736,8 @@ func (kiwriter *KiWriter) persistTraceRecord(traceRecords []kineticaTraceRecord)
 }
 
 func (kiwriter *KiWriter) persistGaugeRecord(gaugeRecords []kineticaGaugeRecord) error {
+	kiwriter.logger.Info("In persistGaugeRecord ...")
+
 	var errs []error
 	var gauges []any
 	var resourceAttributes []any
@@ -1779,6 +1781,8 @@ func (kiwriter *KiWriter) persistGaugeRecord(gaugeRecords []kineticaGaugeRecord)
 }
 
 func (kiwriter *KiWriter) persistSumRecord(sumRecords []kineticaSumRecord) error {
+	kiwriter.logger.Info("In persistSumRecord ...")
+
 	var errs []error
 
 	var sums []any
@@ -1823,6 +1827,8 @@ func (kiwriter *KiWriter) persistSumRecord(sumRecords []kineticaSumRecord) error
 }
 
 func (kiwriter *KiWriter) persistHistogramRecord(histogramRecords []kineticaHistogramRecord) error {
+	kiwriter.logger.Info("In persistHistogramRecord ...")
+
 	var errs []error
 
 	var histograms []any
@@ -1873,6 +1879,8 @@ func (kiwriter *KiWriter) persistHistogramRecord(histogramRecords []kineticaHist
 }
 
 func (kiwriter *KiWriter) persistExponentialHistogramRecord(exponentialHistogramRecords []kineticaExponentialHistogramRecord) error {
+	kiwriter.logger.Info("In persistExponentialHistogramRecord ...")
+
 	var errs []error
 
 	var histograms []any
@@ -1923,6 +1931,8 @@ func (kiwriter *KiWriter) persistExponentialHistogramRecord(exponentialHistogram
 }
 
 func (kiwriter *KiWriter) persistSummaryRecord(summaryRecords []kineticaSummaryRecord) error {
+	kiwriter.logger.Info("In persistSummaryRecord ...")
+
 	var errs []error
 
 	var summaries []any
@@ -1980,6 +1990,8 @@ func (kiwriter *KiWriter) doChunkedInsert(ctx context.Context, tableName string,
 	} else {
 		finalTable = tableName
 	}
+
+	kiwriter.logger.Info("Writing to - ", zap.String("Table", finalTable))
 
 	recordChunks := ChunkBySize(records, ChunkSize)
 
