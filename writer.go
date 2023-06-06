@@ -1884,14 +1884,38 @@ func (kiwriter *KiWriter) persistHistogramRecord(histogramRecords []kineticaHist
 	for _, histogramrecord := range histogramRecords {
 
 		histograms = append(histograms, *histogramrecord.histogram)
-		resourceAttributes = append(resourceAttributes, histogramrecord.histogramResourceAttribute)
-		scopeAttributes = append(scopeAttributes, histogramrecord.histogramScopeAttribute)
-		datapoints = append(datapoints, histogramrecord.histogramDatapoint)
-		datapointAttributes = append(datapointAttributes, histogramrecord.histogramDatapointAtribute)
-		bucketCounts = append(bucketCounts, histogramrecord.histogramBucketCount)
-		explicitBounds = append(explicitBounds, histogramrecord.histogramExplicitBound)
-		exemplars = append(exemplars, histogramrecord.exemplars)
-		exemplarAttributes = append(exemplarAttributes, histogramrecord.exemplarAttribute)
+
+		for _, ra := range histogramrecord.histogramResourceAttribute {
+			resourceAttributes = append(resourceAttributes, ra)
+		}
+
+		for _, sa := range histogramrecord.histogramScopeAttribute {
+			scopeAttributes = append(scopeAttributes, sa)
+		}
+
+		for _, dp := range histogramrecord.histogramDatapoint {
+			datapoints = append(datapoints, dp)
+		}
+
+		for _, dpattr := range histogramrecord.histogramDatapointAtribute {
+			datapointAttributes = append(datapointAttributes, dpattr)
+		}
+
+		for _, bc := range histogramrecord.histogramBucketCount {
+			bucketCounts = append(bucketCounts, bc)
+		}
+
+		for _, eb := range histogramrecord.histogramExplicitBound {
+			explicitBounds = append(explicitBounds, eb)
+		}
+
+		for _, ex := range histogramrecord.exemplars {
+			exemplars = append(exemplars, ex)
+		}
+
+		for _, exattr := range histogramrecord.exemplarAttribute {
+			exemplarAttributes = append(exemplarAttributes, exattr)
+		}
 	}
 
 	tableDataMap = make(map[string][]any, 9)
