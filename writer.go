@@ -1752,12 +1752,31 @@ func (kiwriter *KiWriter) persistGaugeRecord(gaugeRecords []kineticaGaugeRecord)
 	for _, gaugerecord := range gaugeRecords {
 
 		gauges = append(gauges, *gaugerecord.gauge)
-		resourceAttributes = append(resourceAttributes, gaugerecord.resourceAttribute)
-		scopeAttributes = append(scopeAttributes, gaugerecord.scopeAttribute)
-		datapoints = append(datapoints, gaugerecord.datapoint)
-		datapointAttributes = append(datapointAttributes, gaugerecord.datapointAttribute)
-		exemplars = append(exemplars, gaugerecord.exemplars)
-		exemplarAttributes = append(exemplarAttributes, gaugerecord.exemplarAttribute)
+
+		for _, gr := range gaugerecord.resourceAttribute {
+			resourceAttributes = append(resourceAttributes, gr)
+		}
+
+		for _, sa := range gaugerecord.scopeAttribute {
+			scopeAttributes = append(scopeAttributes, sa)
+		}
+
+		for _, dp := range gaugerecord.datapoint {
+			datapoints = append(datapoints, dp)
+		}
+
+		for _, dpattr := range gaugerecord.datapointAttribute {
+			datapointAttributes = append(datapointAttributes, dpattr)
+		}
+
+		for _, ge := range gaugerecord.exemplars {
+			exemplars = append(exemplars, ge)
+		}
+
+		for _, geattr := range gaugerecord.exemplarAttribute {
+			exemplarAttributes = append(exemplarAttributes, geattr)
+		}
+
 	}
 
 	tableDataMap = make(map[string][]any, 7)
@@ -1798,12 +1817,31 @@ func (kiwriter *KiWriter) persistSumRecord(sumRecords []kineticaSumRecord) error
 	for _, sumrecord := range sumRecords {
 
 		sums = append(sums, *sumrecord.sum)
-		resourceAttributes = append(resourceAttributes, sumrecord.sumResourceAttribute)
-		scopeAttributes = append(scopeAttributes, sumrecord.sumScopeAttribute)
-		datapoints = append(datapoints, sumrecord.datapoint)
-		datapointAttributes = append(datapointAttributes, sumrecord.datapointAttribute)
-		exemplars = append(exemplars, sumrecord.exemplars)
-		exemplarAttributes = append(exemplarAttributes, sumrecord.exemplarAttribute)
+
+		for _, sr := range sumrecord.sumResourceAttribute {
+			resourceAttributes = append(resourceAttributes, sr)
+		}
+
+		for _, sa := range sumrecord.sumScopeAttribute {
+			scopeAttributes = append(scopeAttributes, sa)
+		}
+
+		for _, dp := range sumrecord.datapoint {
+			datapoints = append(datapoints, dp)
+		}
+
+		for _, dpattr := range sumrecord.datapointAttribute {
+			datapointAttributes = append(datapointAttributes, dpattr)
+		}
+
+		for _, se := range sumrecord.exemplars {
+			exemplars = append(exemplars, se)
+		}
+
+		for _, seattr := range sumrecord.exemplarAttribute {
+			exemplarAttributes = append(exemplarAttributes, seattr)
+		}
+
 	}
 
 	tableDataMap = make(map[string][]any, 7)
