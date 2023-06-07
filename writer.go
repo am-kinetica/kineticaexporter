@@ -2064,8 +2064,13 @@ func (kiwriter *KiWriter) doChunkedInsert(ctx context.Context, tableName string,
 	for _, recordChunk := range recordChunks {
 		wg.Add(1)
 		go func(data []any, wg *sync.WaitGroup) {
+			var mutex = &sync.Mutex{}
+
+			mutex.Lock()
 			_, err := kiwriter.Db.InsertRecordsRaw(context.TODO(), finalTable, data)
 			errsChan <- err
+			mutex.Unlock()
+
 			wg.Done()
 		}(recordChunk, wg)
 	}
