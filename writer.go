@@ -3,7 +3,6 @@ package kineticaotelexporter
 import (
 	"context"
 	"fmt"
-	"sync"
 
 	"github.com/am-kinetica/gpudb-api-go/gpudb"
 	"github.com/google/uuid"
@@ -1695,11 +1694,26 @@ func (kiwriter *KiWriter) persistTraceRecord(traceRecords []kineticaTraceRecord)
 	for _, tracerecord := range traceRecords {
 
 		spans = append(spans, *tracerecord.span)
-		spanAttribs = append(spanAttribs, tracerecord.spanAttribute)
-		spanResourceAttribs = append(spanResourceAttribs, tracerecord.resourceAttribute)
-		spanScopeAttribs = append(spanScopeAttribs, tracerecord.scopeAttribute)
-		spanEventAttribs = append(spanEventAttribs, tracerecord.eventAttribute)
-		spanLinkAttribs = append(spanLinkAttribs, tracerecord.linkAttribute)
+
+		for _, spa := range tracerecord.spanAttribute {
+			spanAttribs = append(spanAttribs, spa)
+		}
+
+		for _, ra := range tracerecord.resourceAttribute {
+			spanResourceAttribs = append(spanResourceAttribs, ra)
+		}
+
+		for _, sa := range tracerecord.scopeAttribute {
+			spanScopeAttribs = append(spanScopeAttribs, sa)
+		}
+
+		for _, ea := range tracerecord.eventAttribute {
+			spanEventAttribs = append(spanEventAttribs, ea)
+		}
+
+		for _, la := range tracerecord.linkAttribute {
+			spanLinkAttribs = append(spanLinkAttribs, la)
+		}
 	}
 
 	err := kiwriter.doChunkedInsert(context.TODO(), TraceSpanTable, spans)
@@ -1960,14 +1974,38 @@ func (kiwriter *KiWriter) persistExponentialHistogramRecord(exponentialHistogram
 	for _, histogramrecord := range exponentialHistogramRecords {
 
 		histograms = append(histograms, *histogramrecord.histogram)
-		resourceAttributes = append(resourceAttributes, histogramrecord.histogramResourceAttribute)
-		scopeAttributes = append(scopeAttributes, histogramrecord.histogramScopeAttribute)
-		datapoints = append(datapoints, histogramrecord.histogramDatapoint)
-		datapointAttributes = append(datapointAttributes, histogramrecord.histogramDatapointAttribute)
-		positiveBucketCounts = append(positiveBucketCounts, histogramrecord.histogramBucketPositiveCount)
-		negativeBucketCounts = append(negativeBucketCounts, histogramrecord.histogramBucketNegativeCount)
-		exemplars = append(exemplars, histogramrecord.exemplars)
-		exemplarAttributes = append(exemplarAttributes, histogramrecord.exemplarAttribute)
+
+		for _, ra := range histogramrecord.histogramResourceAttribute {
+			resourceAttributes = append(resourceAttributes, ra)
+		}
+
+		for _, sa := range histogramrecord.histogramScopeAttribute {
+			scopeAttributes = append(scopeAttributes, sa)
+		}
+
+		for _, dp := range histogramrecord.histogramDatapoint {
+			datapoints = append(datapoints, dp)
+		}
+
+		for _, dpattr := range histogramrecord.histogramDatapointAttribute {
+			datapointAttributes = append(datapointAttributes, dpattr)
+		}
+
+		for _, posbc := range histogramrecord.histogramBucketPositiveCount {
+			positiveBucketCounts = append(positiveBucketCounts, posbc)
+		}
+
+		for _, negbc := range histogramrecord.histogramBucketNegativeCount {
+			negativeBucketCounts = append(negativeBucketCounts, negbc)
+		}
+
+		for _, ex := range histogramrecord.exemplars {
+			exemplars = append(exemplars, ex)
+		}
+
+		for _, exattr := range histogramrecord.exemplarAttribute {
+			exemplarAttributes = append(exemplarAttributes, exattr)
+		}
 	}
 
 	tableDataMap = make(map[string][]any, 9)
@@ -2009,11 +2047,26 @@ func (kiwriter *KiWriter) persistSummaryRecord(summaryRecords []kineticaSummaryR
 	for _, summaryrecord := range summaryRecords {
 
 		summaries = append(summaries, *summaryrecord.summary)
-		resourceAttributes = append(resourceAttributes, summaryrecord.summaryResourceAttribute)
-		scopeAttributes = append(scopeAttributes, summaryrecord.summaryScopeAttribute)
-		datapoints = append(datapoints, summaryrecord.summaryDatapoint)
-		datapointAttributes = append(datapointAttributes, summaryrecord.summaryDatapointAttribute)
-		datapointQuantiles = append(datapointQuantiles, summaryrecord.summaryDatapointQuantileValues)
+
+		for _, ra := range summaryrecord.summaryResourceAttribute {
+			resourceAttributes = append(resourceAttributes, ra)
+		}
+
+		for _, sa := range summaryrecord.summaryScopeAttribute {
+			scopeAttributes = append(scopeAttributes, sa)
+		}
+
+		for _, dp := range summaryrecord.summaryDatapoint {
+			datapoints = append(datapoints, dp)
+		}
+
+		for _, dpattr := range summaryrecord.summaryDatapointAttribute {
+			datapointAttributes = append(datapointAttributes, dpattr)
+		}
+
+		for _, dpq := range summaryrecord.summaryDatapointQuantileValues {
+			datapointQuantiles = append(datapointQuantiles, dpq)
+		}
 	}
 
 	tableDataMap = make(map[string][]any, 6)
@@ -2045,6 +2098,7 @@ func (kiwriter *KiWriter) persistSummaryRecord(summaryRecords []kineticaSummaryR
 //	@return error
 func (kiwriter *KiWriter) doChunkedInsert(ctx context.Context, tableName string, records []any) error {
 
+	var errs []error
 	// Build the final table name with the schema prepended
 	var finalTable string
 	if len(kiwriter.cfg.Schema) != 0 {
@@ -2057,28 +2111,9 @@ func (kiwriter *KiWriter) doChunkedInsert(ctx context.Context, tableName string,
 
 	recordChunks := ChunkBySize(records, ChunkSize)
 
-	errsChan := make(chan error, len(recordChunks))
-
-	wg := &sync.WaitGroup{}
-	// var mutex = &sync.Mutex{}
-
 	for _, recordChunk := range recordChunks {
-		wg.Add(1)
-		go func(data []any, wg *sync.WaitGroup) {
-
-			// mutex.Lock()
-			_, err := kiwriter.Db.InsertRecordsRaw(context.TODO(), finalTable, data)
-			errsChan <- err
-			// mutex.Unlock()
-
-			wg.Done()
-		}(recordChunk, wg)
+		_, err := kiwriter.Db.InsertRecordsRaw(context.TODO(), finalTable, recordChunk)
+		errs = append(errs, err)
 	}
-	wg.Wait()
-	close(errsChan)
-	var errs error
-	for err := range errsChan {
-		errs = multierr.Append(errs, err)
-	}
-	return errs
+	return multierr.Combine(errs...)
 }
