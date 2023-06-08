@@ -3,6 +3,7 @@ package kineticaotelexporter
 import (
 	"context"
 	"fmt"
+	"sync"
 
 	"github.com/am-kinetica/gpudb-api-go/gpudb"
 	"github.com/google/uuid"
@@ -2096,9 +2097,30 @@ func (kiwriter *KiWriter) persistSummaryRecord(summaryRecords []kineticaSummaryR
 //	@param tableName
 //	@param records
 //	@return error
+// func (kiwriter *KiWriter) doChunkedInsert(ctx context.Context, tableName string, records []any) error {
+
+// 	var errs []error
+// 	// Build the final table name with the schema prepended
+// 	var finalTable string
+// 	if len(kiwriter.cfg.Schema) != 0 {
+// 		finalTable = fmt.Sprintf("%s.%s", kiwriter.cfg.Schema, tableName)
+// 	} else {
+// 		finalTable = tableName
+// 	}
+
+// 	kiwriter.logger.Info("Writing to - ", zap.String("Table", finalTable), zap.Int("Recoord count", len(records)))
+
+// 	recordChunks := ChunkBySize(records, ChunkSize)
+
+// 	for _, recordChunk := range recordChunks {
+// 		_, err := kiwriter.Db.InsertRecordsRaw(context.TODO(), finalTable, recordChunk)
+// 		errs = append(errs, err)
+// 	}
+// 	return multierr.Combine(errs...)
+// }
+
 func (kiwriter *KiWriter) doChunkedInsert(ctx context.Context, tableName string, records []any) error {
 
-	var errs []error
 	// Build the final table name with the schema prepended
 	var finalTable string
 	if len(kiwriter.cfg.Schema) != 0 {
@@ -2107,13 +2129,28 @@ func (kiwriter *KiWriter) doChunkedInsert(ctx context.Context, tableName string,
 		finalTable = tableName
 	}
 
-	kiwriter.logger.Info("Writing to - ", zap.String("Table", finalTable), zap.Int("Recoord count", len(records)))
+	kiwriter.logger.Info("Writing to - ", zap.String("Table", finalTable), zap.Int("Record count", len(records)))
 
 	recordChunks := ChunkBySize(records, ChunkSize)
 
+	errsChan := make(chan error, len(recordChunks))
+
+	wg := &sync.WaitGroup{}
+
 	for _, recordChunk := range recordChunks {
-		_, err := kiwriter.Db.InsertRecordsRaw(context.TODO(), finalTable, recordChunk)
-		errs = append(errs, err)
+		wg.Add(1)
+		go func(data []any, wg *sync.WaitGroup) {
+			_, err := kiwriter.Db.InsertRecordsRaw(context.TODO(), finalTable, data)
+			errsChan <- err
+
+			wg.Done()
+		}(recordChunk, wg)
 	}
-	return multierr.Combine(errs...)
+	wg.Wait()
+	close(errsChan)
+	var errs error
+	for err := range errsChan {
+		errs = multierr.Append(errs, err)
+	}
+	return errs
 }
