@@ -7,6 +7,7 @@ import (
 
 	"github.com/am-kinetica/gpudb-api-go/gpudb"
 	"github.com/google/uuid"
+	orderedmap "github.com/wk8/go-ordered-map"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
 )
@@ -1762,8 +1763,6 @@ func (kiwriter *KiWriter) persistGaugeRecord(gaugeRecords []kineticaGaugeRecord)
 	var exemplars []any
 	var exemplarAttributes []any
 
-	var tableDataMap map[string][]any
-
 	for _, gaugerecord := range gaugeRecords {
 
 		gauges = append(gauges, *gaugerecord.gauge)
@@ -1794,21 +1793,42 @@ func (kiwriter *KiWriter) persistGaugeRecord(gaugeRecords []kineticaGaugeRecord)
 
 	}
 
-	tableDataMap = make(map[string][]any, 7)
+	tableDataMap := orderedmap.New()
 
-	tableDataMap[GaugeTable] = gauges
-	tableDataMap[GaugeResourceAttributeTable] = resourceAttributes
-	tableDataMap[GaugeScopeAttributeTable] = scopeAttributes
-	tableDataMap[GaugeDatapointTable] = datapoints
-	tableDataMap[GaugeDatapointAttributeTable] = datapointAttributes
-	tableDataMap[GaugeDatapointExemplarTable] = exemplars
-	tableDataMap[GaugeDatapointExemplarAttributeTable] = exemplarAttributes
+	tableDataMap.Set(GaugeTable, gauges)
+	tableDataMap.Set(GaugeResourceAttributeTable, resourceAttributes)
+	tableDataMap.Set(GaugeScopeAttributeTable, scopeAttributes)
+	tableDataMap.Set(GaugeDatapointTable, datapoints)
+	tableDataMap.Set(GaugeDatapointAttributeTable, datapointAttributes)
+	tableDataMap.Set(GaugeDatapointExemplarTable, exemplars)
+	tableDataMap.Set(GaugeDatapointExemplarAttributeTable, exemplarAttributes)
 
-	for tableName, data := range tableDataMap {
-		err := kiwriter.doChunkedInsert(context.TODO(), tableName, data)
-		if err != nil {
-			errs = append(errs, err)
+	errsChan := make(chan error, tableDataMap.Len())
+
+	wg := &sync.WaitGroup{}
+	for pair := tableDataMap.Oldest(); pair != nil; pair = pair.Next() {
+		tableName := pair.Key.(string)
+		data := pair.Value.([]any)
+
+		wg.Add(1)
+
+		go func(tableName string, data []any, wg *sync.WaitGroup) {
+			err := kiwriter.doChunkedInsert(context.TODO(), tableName, data)
+			if err != nil {
+				errsChan <- err
+			}
+			wg.Done()
+		}(tableName, data, wg)
+
+		wg.Wait()
+
+		close(errsChan)
+
+		var insErrs error
+		for err := range errsChan {
+			insErrs = multierr.Append(insErrs, err)
 		}
+		errs = append(errs, insErrs)
 	}
 
 	return multierr.Combine(errs...)
