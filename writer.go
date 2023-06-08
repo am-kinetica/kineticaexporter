@@ -1820,16 +1820,16 @@ func (kiwriter *KiWriter) persistGaugeRecord(gaugeRecords []kineticaGaugeRecord)
 			wg.Done()
 		}(tableName, data, wg)
 
-		wg.Wait()
-
-		close(errsChan)
-
-		var insErrs error
-		for err := range errsChan {
-			insErrs = multierr.Append(insErrs, err)
-		}
-		errs = append(errs, insErrs)
 	}
+	wg.Wait()
+
+	close(errsChan)
+
+	var insErrs error
+	for err := range errsChan {
+		insErrs = multierr.Append(insErrs, err)
+	}
+	errs = append(errs, insErrs)
 
 	return multierr.Combine(errs...)
 }
