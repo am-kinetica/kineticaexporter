@@ -3,11 +3,17 @@ module github.com/am-kinetica/kineticaexporter
 go 1.20
 
 require (
-	github.com/am-kinetica/gpudb-api-go v0.0.8
+	github.com/am-kinetica/gpudb-api-go v0.0.9
 	go.opentelemetry.io/collector/component v0.76.1
 	go.opentelemetry.io/collector/exporter v0.76.1
 	go.uber.org/zap v1.24.0
 
+)
+
+require (
+	github.com/kr/pretty v0.3.1 // indirect
+	github.com/kr/text v0.2.0 // indirect
+	github.com/rogpeppe/go-internal v1.10.0 // indirect
 )
 
 require (
