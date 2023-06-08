@@ -13,6 +13,8 @@ github.com/am-kinetica/gpudb-api-go v0.0.7 h1:UGO2AhY6PR+q5YzARCND/icBfozJJcTu3k
 github.com/am-kinetica/gpudb-api-go v0.0.7/go.mod h1:un+FIuZBS5w2jGE3Mzyl72lXiPT4Z0e7JKUGc0fdWEM=
 github.com/am-kinetica/gpudb-api-go v0.0.8 h1:drFzfbC9Khs2SH7UvPlVf/d5p1Z7GdncoYcfUSrCn64=
 github.com/am-kinetica/gpudb-api-go v0.0.8/go.mod h1:25WkUlPh9looksUDqGGrc/ADn085DbHAZKbDWj5NS7I=
+github.com/am-kinetica/gpudb-api-go v0.0.9 h1:9jbK6OWuCl/yJ2MKUcXlg0M5AOHyilZdYu259kTWK7k=
+github.com/am-kinetica/gpudb-api-go v0.0.9/go.mod h1:25WkUlPh9looksUDqGGrc/ADn085DbHAZKbDWj5NS7I=
 github.com/antihax/optional v1.0.0/go.mod h1:uupD/76wgC+ih3iEmQUL+0Ugr19nfwCT1kdvxnR2qWY=
 github.com/armon/circbuf v0.0.0-20150827004946-bbbad097214e/go.mod h1:3U/XgcO3hCbHZ8TKRvWD2dDTCfh9M9ya+I9JpbB7O8o=
 github.com/armon/go-metrics v0.0.0-20180917152333-f0300d1749da/go.mod h1:Q73ZrmVTwzkszR9V5SSuryQ31EELlFMUz1kKyl939pY=
