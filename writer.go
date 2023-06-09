@@ -1759,6 +1759,9 @@ func (kiwriter *KiWriter) persistTraceRecord(traceRecords []kineticaTraceRecord)
 //	@param tableDataMap
 //	@return error
 func (kiwriter *KiWriter) writeMetric(metricType string, tableDataMap *orderedmap.OrderedMap) error {
+
+	kiwriter.logger.Info("Writing metric", zap.String("Type", metricType))
+
 	var errs []error
 	errsChan := make(chan error, tableDataMap.Len())
 
