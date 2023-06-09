@@ -8,6 +8,7 @@ import (
 	"github.com/am-kinetica/gpudb-api-go/gpudb"
 	"github.com/google/uuid"
 	orderedmap "github.com/wk8/go-ordered-map"
+	"go.opentelemetry.io/collector/pdata/pmetric"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
 )
@@ -1751,6 +1752,47 @@ func (kiwriter *KiWriter) persistTraceRecord(traceRecords []kineticaTraceRecord)
 	return multierr.Combine(errs...)
 }
 
+// writeMetric
+//
+//	@receiver kiwriter
+//	@param metricType
+//	@param tableDataMap
+//	@return error
+func (kiwriter *KiWriter) writeMetric(metricType string, tableDataMap *orderedmap.OrderedMap) error {
+
+	kiwriter.logger.Info("Writing metric", zap.String("Type", metricType))
+
+	var errs []error
+	errsChan := make(chan error, tableDataMap.Len())
+
+	wg := &sync.WaitGroup{}
+	for pair := tableDataMap.Oldest(); pair != nil; pair = pair.Next() {
+		tableName := pair.Key.(string)
+		data := pair.Value.([]any)
+
+		wg.Add(1)
+
+		go func(tableName string, data []any, wg *sync.WaitGroup) {
+			err := kiwriter.doChunkedInsert(context.TODO(), tableName, data)
+			if err != nil {
+				errsChan <- err
+			}
+			wg.Done()
+		}(tableName, data, wg)
+
+	}
+	wg.Wait()
+
+	close(errsChan)
+
+	var insErrs error
+	for err := range errsChan {
+		insErrs = multierr.Append(insErrs, err)
+	}
+	errs = append(errs, insErrs)
+	return multierr.Combine(errs...)
+}
+
 func (kiwriter *KiWriter) persistGaugeRecord(gaugeRecords []kineticaGaugeRecord) error {
 	kiwriter.logger.Info("In persistGaugeRecord ...")
 
@@ -1796,40 +1838,14 @@ func (kiwriter *KiWriter) persistGaugeRecord(gaugeRecords []kineticaGaugeRecord)
 	tableDataMap := orderedmap.New()
 
 	tableDataMap.Set(GaugeTable, gauges)
-	tableDataMap.Set(GaugeResourceAttributeTable, resourceAttributes)
-	tableDataMap.Set(GaugeScopeAttributeTable, scopeAttributes)
 	tableDataMap.Set(GaugeDatapointTable, datapoints)
 	tableDataMap.Set(GaugeDatapointAttributeTable, datapointAttributes)
+	tableDataMap.Set(GaugeResourceAttributeTable, resourceAttributes)
+	tableDataMap.Set(GaugeScopeAttributeTable, scopeAttributes)
 	tableDataMap.Set(GaugeDatapointExemplarTable, exemplars)
 	tableDataMap.Set(GaugeDatapointExemplarAttributeTable, exemplarAttributes)
 
-	errsChan := make(chan error, tableDataMap.Len())
-
-	wg := &sync.WaitGroup{}
-	for pair := tableDataMap.Oldest(); pair != nil; pair = pair.Next() {
-		tableName := pair.Key.(string)
-		data := pair.Value.([]any)
-
-		wg.Add(1)
-
-		go func(tableName string, data []any, wg *sync.WaitGroup) {
-			err := kiwriter.doChunkedInsert(context.TODO(), tableName, data)
-			if err != nil {
-				errsChan <- err
-			}
-			wg.Done()
-		}(tableName, data, wg)
-
-	}
-	wg.Wait()
-
-	close(errsChan)
-
-	var insErrs error
-	for err := range errsChan {
-		insErrs = multierr.Append(insErrs, err)
-	}
-	errs = append(errs, insErrs)
+	errs = append(errs, kiwriter.writeMetric(pmetric.MetricTypeGauge.String(), tableDataMap))
 
 	return multierr.Combine(errs...)
 }
@@ -1846,8 +1862,6 @@ func (kiwriter *KiWriter) persistSumRecord(sumRecords []kineticaSumRecord) error
 	var datapointAttributes []any
 	var exemplars []any
 	var exemplarAttributes []any
-
-	var tableDataMap map[string][]any
 
 	for _, sumrecord := range sumRecords {
 
@@ -1879,22 +1893,17 @@ func (kiwriter *KiWriter) persistSumRecord(sumRecords []kineticaSumRecord) error
 
 	}
 
-	tableDataMap = make(map[string][]any, 7)
+	tableDataMap := orderedmap.New()
 
-	tableDataMap[SumTable] = sums
-	tableDataMap[SumResourceAttributeTable] = resourceAttributes
-	tableDataMap[SumScopeAttributeTable] = scopeAttributes
-	tableDataMap[SumDatapointTable] = datapoints
-	tableDataMap[SumDatapointAttributeTable] = datapointAttributes
-	tableDataMap[SumDatapointExemplarTable] = exemplars
-	tableDataMap[SumDataPointExemplarAttributeTable] = exemplarAttributes
+	tableDataMap.Set(SumTable, sums)
+	tableDataMap.Set(SumDatapointTable, datapoints)
+	tableDataMap.Set(SumDatapointAttributeTable, datapointAttributes)
+	tableDataMap.Set(SumResourceAttributeTable, resourceAttributes)
+	tableDataMap.Set(SumScopeAttributeTable, scopeAttributes)
+	tableDataMap.Set(SumDatapointExemplarTable, exemplars)
+	tableDataMap.Set(SumDataPointExemplarAttributeTable, exemplarAttributes)
 
-	for tableName, data := range tableDataMap {
-		err := kiwriter.doChunkedInsert(context.TODO(), tableName, data)
-		if err != nil {
-			errs = append(errs, err)
-		}
-	}
+	errs = append(errs, kiwriter.writeMetric(pmetric.MetricTypeSum.String(), tableDataMap))
 
 	return multierr.Combine(errs...)
 }
@@ -1913,8 +1922,6 @@ func (kiwriter *KiWriter) persistHistogramRecord(histogramRecords []kineticaHist
 	var explicitBounds []any
 	var exemplars []any
 	var exemplarAttributes []any
-
-	var tableDataMap map[string][]any
 
 	for _, histogramrecord := range histogramRecords {
 
@@ -1953,24 +1960,19 @@ func (kiwriter *KiWriter) persistHistogramRecord(histogramRecords []kineticaHist
 		}
 	}
 
-	tableDataMap = make(map[string][]any, 9)
+	tableDataMap := orderedmap.New()
 
-	tableDataMap[HistogramTable] = histograms
-	tableDataMap[HistogramResourceAttributeTable] = resourceAttributes
-	tableDataMap[HistogramScopeAttributeTable] = scopeAttributes
-	tableDataMap[HistogramDatapointTable] = datapoints
-	tableDataMap[HistogramDatapointAttributeTable] = datapointAttributes
-	tableDataMap[HistogramBucketCountsTable] = bucketCounts
-	tableDataMap[HistogramExplicitBoundsTable] = explicitBounds
-	tableDataMap[HistogramDatapointExemplarTable] = exemplars
-	tableDataMap[HistogramDataPointExemplarAttributeTable] = exemplarAttributes
+	tableDataMap.Set(HistogramTable, histograms)
+	tableDataMap.Set(HistogramDatapointTable, datapoints)
+	tableDataMap.Set(HistogramDatapointAttributeTable, datapointAttributes)
+	tableDataMap.Set(HistogramBucketCountsTable, bucketCounts)
+	tableDataMap.Set(HistogramExplicitBoundsTable, explicitBounds)
+	tableDataMap.Set(HistogramResourceAttributeTable, resourceAttributes)
+	tableDataMap.Set(HistogramScopeAttributeTable, scopeAttributes)
+	tableDataMap.Set(HistogramDatapointExemplarTable, exemplars)
+	tableDataMap.Set(HistogramDataPointExemplarAttributeTable, exemplarAttributes)
 
-	for tableName, data := range tableDataMap {
-		err := kiwriter.doChunkedInsert(context.TODO(), tableName, data)
-		if err != nil {
-			errs = append(errs, err)
-		}
-	}
+	errs = append(errs, kiwriter.writeMetric(pmetric.MetricTypeHistogram.String(), tableDataMap))
 
 	return multierr.Combine(errs...)
 }
@@ -1989,8 +1991,6 @@ func (kiwriter *KiWriter) persistExponentialHistogramRecord(exponentialHistogram
 	var negativeBucketCounts []any
 	var exemplars []any
 	var exemplarAttributes []any
-
-	var tableDataMap map[string][]any
 
 	for _, histogramrecord := range exponentialHistogramRecords {
 
@@ -2029,24 +2029,19 @@ func (kiwriter *KiWriter) persistExponentialHistogramRecord(exponentialHistogram
 		}
 	}
 
-	tableDataMap = make(map[string][]any, 9)
+	tableDataMap := orderedmap.New()
 
-	tableDataMap[ExpHistogramTable] = histograms
-	tableDataMap[ExpHistogramResourceAttributeTable] = resourceAttributes
-	tableDataMap[ExpHistogramScopeAttributeTable] = scopeAttributes
-	tableDataMap[ExpHistogramDatapointTable] = datapoints
-	tableDataMap[ExpHistogramDatapointAttributeTable] = datapointAttributes
-	tableDataMap[ExpHistogramPositiveBucketCountsTable] = positiveBucketCounts
-	tableDataMap[ExpHistogramNegativeBucketCountsTable] = negativeBucketCounts
-	tableDataMap[ExpHistogramDatapointExemplarTable] = exemplars
-	tableDataMap[ExpHistogramDataPointExemplarAttributeTable] = exemplarAttributes
+	tableDataMap.Set(ExpHistogramTable, histograms)
+	tableDataMap.Set(ExpHistogramDatapointTable, datapoints)
+	tableDataMap.Set(ExpHistogramDatapointAttributeTable, datapointAttributes)
+	tableDataMap.Set(ExpHistogramPositiveBucketCountsTable, positiveBucketCounts)
+	tableDataMap.Set(ExpHistogramNegativeBucketCountsTable, negativeBucketCounts)
+	tableDataMap.Set(ExpHistogramResourceAttributeTable, resourceAttributes)
+	tableDataMap.Set(ExpHistogramScopeAttributeTable, scopeAttributes)
+	tableDataMap.Set(ExpHistogramDatapointExemplarTable, exemplars)
+	tableDataMap.Set(ExpHistogramDataPointExemplarAttributeTable, exemplarAttributes)
 
-	for tableName, data := range tableDataMap {
-		err := kiwriter.doChunkedInsert(context.TODO(), tableName, data)
-		if err != nil {
-			errs = append(errs, err)
-		}
-	}
+	errs = append(errs, kiwriter.writeMetric(pmetric.MetricTypeExponentialHistogram.String(), tableDataMap))
 
 	return multierr.Combine(errs...)
 }
@@ -2062,8 +2057,6 @@ func (kiwriter *KiWriter) persistSummaryRecord(summaryRecords []kineticaSummaryR
 	var datapoints []any
 	var datapointAttributes []any
 	var datapointQuantiles []any
-
-	var tableDataMap map[string][]any
 
 	for _, summaryrecord := range summaryRecords {
 
@@ -2090,21 +2083,16 @@ func (kiwriter *KiWriter) persistSummaryRecord(summaryRecords []kineticaSummaryR
 		}
 	}
 
-	tableDataMap = make(map[string][]any, 6)
+	tableDataMap := orderedmap.New()
 
-	tableDataMap[SummaryTable] = summaries
-	tableDataMap[SummaryResourceAttributeTable] = resourceAttributes
-	tableDataMap[SummaryScopeAttributeTable] = scopeAttributes
-	tableDataMap[SummaryDatapointTable] = datapoints
-	tableDataMap[SummaryDatapointAttributeTable] = datapointAttributes
-	tableDataMap[SummaryDatapointQuantileValueTable] = datapointQuantiles
+	tableDataMap.Set(SummaryTable, summaries)
+	tableDataMap.Set(SummaryDatapointTable, datapoints)
+	tableDataMap.Set(SummaryDatapointAttributeTable, datapointAttributes)
+	tableDataMap.Set(SummaryDatapointQuantileValueTable, datapointQuantiles)
+	tableDataMap.Set(SummaryResourceAttributeTable, resourceAttributes)
+	tableDataMap.Set(SummaryScopeAttributeTable, scopeAttributes)
 
-	for tableName, data := range tableDataMap {
-		err := kiwriter.doChunkedInsert(context.TODO(), tableName, data)
-		if err != nil {
-			errs = append(errs, err)
-		}
-	}
+	errs = append(errs, kiwriter.writeMetric(pmetric.MetricTypeSummary.String(), tableDataMap))
 
 	return multierr.Combine(errs...)
 
