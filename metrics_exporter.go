@@ -3,7 +3,6 @@ package kineticaotelexporter
 import (
 	"context"
 	"fmt"
-	"strconv"
 
 	"github.com/google/uuid"
 	"go.opentelemetry.io/collector/pdata/pcommon"
@@ -252,8 +251,8 @@ func (e *kineticaMetricsExporter) createSummaryRecord(resAttr pcommon.Map, schem
 		summaryDatapoint := &SummaryDatapoint{
 			SummaryID:     summary.SummaryID,
 			ID:            uuid.New().String(),
-			StartTimeUnix: strconv.Itoa(int(datapoint.StartTimestamp().AsTime().Unix())),
-			TimeUnix:      strconv.Itoa(int(datapoint.Timestamp().AsTime().Unix())),
+			StartTimeUnix: datapoint.StartTimestamp().AsTime().UnixNano(),
+			TimeUnix:      datapoint.Timestamp().AsTime().UnixNano(),
 			Count:         int64(datapoint.Count()),
 			Sum:           datapoint.Sum(),
 			Flags:         int(datapoint.Flags()),
@@ -411,8 +410,8 @@ func (e *kineticaMetricsExporter) createExponentialHistogramRecord(resAttr pcomm
 		expHistogramDatapoint := ExponentialHistogramDatapoint{
 			HistogramID:           histogram.HistogramID,
 			ID:                    uuid.New().String(),
-			StartTimeUnix:         strconv.Itoa(int(datapoint.StartTimestamp().AsTime().Unix())),
-			TimeUnix:              strconv.Itoa(int(datapoint.Timestamp().AsTime().Unix())),
+			StartTimeUnix:         datapoint.StartTimestamp().AsTime().UnixNano(),
+			TimeUnix:              datapoint.Timestamp().AsTime().UnixNano(),
 			Count:                 int64(datapoint.Count()),
 			Sum:                   datapoint.Sum(),
 			Min:                   datapoint.Min(),
@@ -462,7 +461,7 @@ func (e *kineticaMetricsExporter) createExponentialHistogramRecord(resAttr pcomm
 				HistogramID:    histogram.HistogramID,
 				DatapointID:    expHistogramDatapoint.ID,
 				ExemplarID:     uuid.New().String(),
-				TimeUnix:       strconv.Itoa(int(exemplar.Timestamp().AsTime().Unix())),
+				TimeUnix:       exemplar.Timestamp().AsTime().UnixNano(),
 				HistogramValue: exemplar.DoubleValue(),
 				TraceID:        exemplar.TraceID().String(),
 				SpanID:         exemplar.SpanID().String(),
@@ -633,8 +632,8 @@ func (e *kineticaMetricsExporter) createHistogramRecord(resAttr pcommon.Map, sch
 		histogramDatapoint := &HistogramDatapoint{
 			HistogramID:   histogram.HistogramID,
 			ID:            uuid.New().String(),
-			StartTimeUnix: strconv.Itoa(int(datapoint.StartTimestamp().AsTime().Unix())),
-			TimeUnix:      strconv.Itoa(int(datapoint.Timestamp().AsTime().Unix())),
+			StartTimeUnix: datapoint.StartTimestamp().AsTime().UnixNano(),
+			TimeUnix:      datapoint.Timestamp().AsTime().UnixNano(),
 			Count:         int64(datapoint.Count()),
 			Sum:           datapoint.Sum(),
 			Min:           datapoint.Min(),
@@ -680,7 +679,7 @@ func (e *kineticaMetricsExporter) createHistogramRecord(resAttr pcommon.Map, sch
 				HistogramID:    histogram.HistogramID,
 				DatapointID:    histogramDatapoint.ID,
 				ExemplarID:     uuid.New().String(),
-				TimeUnix:       strconv.Itoa(int(exemplar.Timestamp().AsTime().Unix())),
+				TimeUnix:       exemplar.Timestamp().AsTime().UnixNano(),
 				HistogramValue: exemplar.DoubleValue(),
 				TraceID:        exemplar.TraceID().String(),
 				SpanID:         exemplar.SpanID().String(),
@@ -856,8 +855,8 @@ func (e *kineticaMetricsExporter) createSumRecord(resAttr pcommon.Map, schemaURL
 		sumDatapoint := SumDatapoint{
 			SumID:         sum.SumID,
 			ID:            uuid.New().String(),
-			StartTimeUnix: strconv.Itoa(int(datapoint.StartTimestamp().AsTime().Unix())),
-			TimeUnix:      strconv.Itoa(int(datapoint.Timestamp().AsTime().Unix())),
+			StartTimeUnix: datapoint.StartTimestamp().AsTime().UnixNano(),
+			TimeUnix:      datapoint.Timestamp().AsTime().UnixNano(),
 			SumValue:      datapoint.DoubleValue(),
 			Flags:         int(datapoint.Flags()),
 		}
@@ -900,7 +899,7 @@ func (e *kineticaMetricsExporter) createSumRecord(resAttr pcommon.Map, schemaURL
 				SumID:       sum.SumID,
 				DatapointID: sumDatapoint.ID,
 				ExemplarID:  uuid.New().String(),
-				TimeUnix:    strconv.Itoa(int(exemplar.Timestamp().AsTime().Unix())),
+				TimeUnix:    exemplar.Timestamp().AsTime().UnixNano(),
 				SumValue:    exemplar.DoubleValue(),
 				TraceID:     exemplar.TraceID().String(),
 				SpanID:      exemplar.SpanID().String(),
@@ -1059,8 +1058,8 @@ func (e *kineticaMetricsExporter) createGaugeRecord(resAttr pcommon.Map, schemaU
 		gaugeDatapoint := GaugeDatapoint{
 			GaugeID:       gauge.GaugeID,
 			ID:            uuid.New().String(),
-			StartTimeUnix: strconv.Itoa(int(datapoint.StartTimestamp().AsTime().Unix())),
-			TimeUnix:      strconv.Itoa(int(datapoint.Timestamp().AsTime().Unix())),
+			StartTimeUnix: datapoint.StartTimestamp().AsTime().UnixNano(),
+			TimeUnix:      datapoint.Timestamp().AsTime().UnixNano(),
 			GaugeValue:    datapoint.DoubleValue(),
 			Flags:         int(datapoint.Flags()),
 		}
@@ -1102,7 +1101,7 @@ func (e *kineticaMetricsExporter) createGaugeRecord(resAttr pcommon.Map, schemaU
 				GaugeID:     gauge.GaugeID,
 				DatapointID: gaugeDatapoint.ID,
 				ExemplarID:  uuid.New().String(),
-				TimeUnix:    strconv.Itoa(int(exemplar.Timestamp().AsTime().Unix())),
+				TimeUnix:    exemplar.Timestamp().AsTime().UnixNano(),
 				GaugeValue:  exemplar.DoubleValue(),
 				TraceID:     exemplar.TraceID().String(),
 				SpanID:      exemplar.SpanID().String(),

@@ -3,7 +3,6 @@ package kineticaotelexporter
 import (
 	"context"
 	"encoding/hex"
-	"strconv"
 
 	"github.com/google/uuid"
 	"github.com/influxdata/influxdb-observability/common"
@@ -155,7 +154,7 @@ func (e *kineticaLogsExporter) createLogRecord(ctx context.Context, resource pco
 	}
 
 	// create log - Body, dropped_attribute_count and flags not handled now
-	log := NewLog(uuid.New().String(), uuid.New().String(), uuid.New().String(), tags[AttributeTraceID], tags[AttributeSpanID], strconv.Itoa(int(ts)), strconv.Itoa(int(ots)), int8(severityNumber), severityText, "", 0)
+	log := NewLog(uuid.New().String(), uuid.New().String(), uuid.New().String(), tags[AttributeTraceID], tags[AttributeSpanID], ts, ots, int8(severityNumber), severityText, "", 0)
 	// _, err := log.insertLog()
 	// errs = append(errs, err)
 

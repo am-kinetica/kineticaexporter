@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
-	"strconv"
 
 	"github.com/google/uuid"
 	"go.opentelemetry.io/collector/pdata/pcommon"
@@ -125,15 +124,15 @@ func (e *kineticaTracesExporter) createTraceRecord(ctx context.Context, resource
 		fields[AttributeSpanKind] = kind.String()
 	}
 
-	ts := spanRecord.StartTimestamp().AsTime()
-	if ts.IsZero() {
+	ts := spanRecord.StartTimestamp().AsTime().UnixNano()
+	if ts == 0 {
 		return nil, errors.New("span has no timestamp")
 	}
 
-	endTime := spanRecord.EndTimestamp().AsTime()
-	if endTime.IsZero() {
-		fields[AttributeEndTimeUnixNano] = endTime.UnixNano()
-		fields[AttributeDurationNano] = endTime.Sub(ts).Nanoseconds()
+	endTime := spanRecord.EndTimestamp().AsTime().UnixNano()
+	if endTime == 0 {
+		fields[AttributeEndTimeUnixNano] = endTime
+		fields[AttributeDurationNano] = endTime - ts
 	}
 
 	droppedAttributesCount := uint64(spanRecord.DroppedAttributesCount())
@@ -153,7 +152,7 @@ func (e *kineticaTracesExporter) createTraceRecord(ctx context.Context, resource
 	droppedEventsCount := spanRecord.DroppedEventsCount()
 
 	kiTraceRecord := new(kineticaTraceRecord)
-	span := NewSpan(uuid.New().String(), uuid.New().String(), uuid.New().String(), uuid.New().String(), tags[AttributeTraceID], tags[AttributeSpanID], fields[AttributeParentSpanID].(string), fields[AttributeTraceState].(string), fields[AttributeName].(string), fields[AttributeSpanKind].(int8), strconv.Itoa(int(ts.UnixNano())), strconv.Itoa(int(fields[AttributeEndTimeUnixNano].(uint64))), int(droppedAttributesCount), int(droppedEventsCount), 0, "", 0)
+	span := NewSpan(uuid.New().String(), uuid.New().String(), uuid.New().String(), uuid.New().String(), tags[AttributeTraceID], tags[AttributeSpanID], fields[AttributeParentSpanID].(string), fields[AttributeTraceState].(string), fields[AttributeName].(string), fields[AttributeSpanKind].(int8), ts, endTime, int(droppedAttributesCount), int(droppedEventsCount), 0, "", 0)
 	kiTraceRecord.span = span
 
 	var spanAttribute []SpanAttribute
