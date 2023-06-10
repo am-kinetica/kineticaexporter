@@ -139,8 +139,8 @@ type Log struct {
 	ScopeID              string `mapstructure:"scope_id" avro:"scope_id"`
 	TraceID              string `mapstructure:"trace_id" avro:"trace_id"`
 	SpanID               string `mapstructure:"span_id" avro:"span_id"`
-	TimeUnixNano         string `mapstructure:"time_unix_nano" avro:"time_unix_nano"`
-	ObservedTimeUnixNano string `mapstructure:"observerd_time_unix_nano" avro:"observerd_time_unix_nano"`
+	TimeUnixNano         int64  `mapstructure:"time_unix_nano" avro:"time_unix_nano"`
+	ObservedTimeUnixNano int64  `mapstructure:"observed_time_unix_nano" avro:"observed_time_unix_nano"`
 	SeverityID           int8   `mapstructure:"severity_id" avro:"severity_id"`
 	SeverityText         string `mapstructure:"severity_text" avro:"severity_text"`
 	Body                 string `mapstructure:"body" avro:"body"`
@@ -161,7 +161,7 @@ type Log struct {
 //	@param Body
 //	@param Flags
 //	@return *Logs
-func NewLog(LogID string, ResourceID string, ScopeID string, TraceID string, SpanID string, TimeUnixNano string, ObservedTimeUnixNano string, SeverityID int8, SeverityText string, Body string, Flags int) *Log {
+func NewLog(LogID string, ResourceID string, ScopeID string, TraceID string, SpanID string, TimeUnixNano int64, ObservedTimeUnixNano int64, SeverityID int8, SeverityText string, Body string, Flags int) *Log {
 	o := new(Log)
 
 	o.LogID = LogID
@@ -223,7 +223,7 @@ func (logs *Log) GetSpanID() string {
 //
 //	@receiver logs
 //	@return uint64
-func (logs *Log) GetTimeUnixNano() string {
+func (logs *Log) GetTimeUnixNano() int64 {
 	return logs.TimeUnixNano
 }
 
@@ -231,7 +231,7 @@ func (logs *Log) GetTimeUnixNano() string {
 //
 //	@receiver logs
 //	@return uint64
-func (logs *Log) GetObservedTimeUnixNano() string {
+func (logs *Log) GetObservedTimeUnixNano() int64 {
 	return logs.ObservedTimeUnixNano
 }
 
@@ -322,7 +322,7 @@ func (logs *Log) SetSpanID(SpanID string) *Log {
 //	@receiver logs
 //	@param TimeUnixNano
 //	@return *Logs
-func (logs *Log) SetTimeUnixNano(TimeUnixNano string) *Log {
+func (logs *Log) SetTimeUnixNano(TimeUnixNano int64) *Log {
 	logs.TimeUnixNano = TimeUnixNano
 	return logs
 }
@@ -332,7 +332,7 @@ func (logs *Log) SetTimeUnixNano(TimeUnixNano string) *Log {
 //	@receiver logs
 //	@param ObservedTimeUnixNano
 //	@return *Logs
-func (logs *Log) SetObservedTimeUnixNano(ObservedTimeUnixNano string) *Log {
+func (logs *Log) SetObservedTimeUnixNano(ObservedTimeUnixNano int64) *Log {
 	logs.ObservedTimeUnixNano = ObservedTimeUnixNano
 	return logs
 }
@@ -646,8 +646,8 @@ type Span struct {
 	TraceState             string `mapstructure:"trace_state" avro:"trace_state"`
 	Name                   string `mapstructure:"name" avro:"name"`
 	SpanKind               int8   `mapstructure:"span_kind" avro:"span_kind"`
-	StartTimeUnixNano      string `mapstructure:"start_time_unix_nano" avro:"start_time_unix_nano"`
-	EndTimeUnixNano        string `mapstructure:"end_time_unix_nano" avro:"end_time_unix_nano"`
+	StartTimeUnixNano      int64  `mapstructure:"start_time_unix_nano" avro:"start_time_unix_nano"`
+	EndTimeUnixNano        int64  `mapstructure:"end_time_unix_nano" avro:"end_time_unix_nano"`
 	DroppedAttributesCount int    `mapstructure:"dropped_attributes_count" avro:"dropped_attributes_count"`
 	DroppedEventsCount     int    `mapstructure:"dropped_events_count" avro:"dropped_events_count"`
 	DroppedLinksCount      int    `mapstructure:"dropped_links_count" avro:"dropped_links_count"`
@@ -675,7 +675,7 @@ type Span struct {
 //	@param message
 //	@param statusCode
 //	@return *Span
-func NewSpan(resourceID string, scopeID string, eventID string, linkID string, traceID string, spanID string, parentSpanID string, traceState string, name string, spanKind int8, startTimeUnixNano string, endTimeUnixNano string, droppedAttributeCount int, droppedEventCount int, droppedLinkCount int, message string, statusCode int8) *Span {
+func NewSpan(resourceID string, scopeID string, eventID string, linkID string, traceID string, spanID string, parentSpanID string, traceState string, name string, spanKind int8, startTimeUnixNano int64, endTimeUnixNano int64, droppedAttributeCount int, droppedEventCount int, droppedLinkCount int, message string, statusCode int8) *Span {
 	o := new(Span)
 	o.ID = uuid.New().String()
 	o.ResourceID = resourceID
@@ -790,7 +790,7 @@ func (span *Span) GetSpanKind() int8 {
 //
 //	@receiver span
 //	@return uint64
-func (span *Span) GetStartTimeUnixNano() string {
+func (span *Span) GetStartTimeUnixNano() int64 {
 	return span.StartTimeUnixNano
 }
 
@@ -798,7 +798,7 @@ func (span *Span) GetStartTimeUnixNano() string {
 //
 //	@receiver span
 //	@return uint64
-func (span *Span) GetEndTimeUnixNano() string {
+func (span *Span) GetEndTimeUnixNano() int64 {
 	return span.EndTimeUnixNano
 }
 
@@ -957,7 +957,7 @@ func (span *Span) SetSpanKind(spanKind int8) *Span {
 //	@receiver span
 //	@param startTimeUnixNano
 //	@return *Span
-func (span *Span) SetStartTimeUnixNano(startTimeUnixNano string) *Span {
+func (span *Span) SetStartTimeUnixNano(startTimeUnixNano int64) *Span {
 	span.StartTimeUnixNano = startTimeUnixNano
 	return span
 }
@@ -967,7 +967,7 @@ func (span *Span) SetStartTimeUnixNano(startTimeUnixNano string) *Span {
 //	@receiver span
 //	@param endTimeUnixNano
 //	@return *Span
-func (span *Span) SetEndTimeUnixNano(endTimeUnixNano string) *Span {
+func (span *Span) SetEndTimeUnixNano(endTimeUnixNano int64) *Span {
 	span.EndTimeUnixNano = endTimeUnixNano
 	return span
 }
@@ -1283,8 +1283,8 @@ type Gauge struct {
 type GaugeDatapoint struct {
 	GaugeID       string  `avro:"gauge_id"`
 	ID            string  `avro:"id"`
-	StartTimeUnix string  `mapstructure:"start_time_unix" avro:"start_time_unix"`
-	TimeUnix      string  `mapstructure:"time_unix" avro:"time_unix"`
+	StartTimeUnix int64   `mapstructure:"start_time_unix" avro:"start_time_unix"`
+	TimeUnix      int64   `mapstructure:"time_unix" avro:"time_unix"`
 	GaugeValue    float64 `mapstructure:"gauge_value" avro:"gauge_value"`
 	Flags         int     `mapstructure:"flags" avro:"flags"`
 }
@@ -1302,7 +1302,7 @@ type GaugeDatapointExemplar struct {
 	GaugeID     string  `avro:"gauge_id"`
 	DatapointID string  `avro:"datapoint_id"`
 	ExemplarID  string  `avro:"exemplar_id"`
-	TimeUnix    string  `mapstructure:"time_unix" avro:"time_unix"`
+	TimeUnix    int64   `mapstructure:"time_unix" avro:"time_unix"`
 	GaugeValue  float64 `mapstructure:"gauge_value" avro:"gauge_value"`
 	TraceID     string  `mapstructure:"trace_id" avro:"trace_id"`
 	SpanID      string  `mapstructure:"span_id" avro:"span_id"`
@@ -1353,8 +1353,8 @@ type Sum struct {
 type SumDatapoint struct {
 	SumID         string  `avro:"sum_id"`
 	ID            string  `avro:"id"`
-	StartTimeUnix string  `mapstructure:"start_time_unix" avro:"start_time_unix"`
-	TimeUnix      string  `mapstructure:"time_unix" avro:"time_unix"`
+	StartTimeUnix int64   `mapstructure:"start_time_unix" avro:"start_time_unix"`
+	TimeUnix      int64   `mapstructure:"time_unix" avro:"time_unix"`
 	SumValue      float64 `mapstructure:"sum_value" avro:"sum_value"`
 	Flags         int     `mapstructure:"flags" avro:"flags"`
 }
@@ -1372,7 +1372,7 @@ type SumDatapointExemplar struct {
 	SumID       string  `avro:"sum_id"`
 	DatapointID string  `avro:"datapoint_id"`
 	ExemplarID  string  `avro:"exemplar_id"`
-	TimeUnix    string  `mapstructure:"time_unix" avro:"time_unix"`
+	TimeUnix    int64   `mapstructure:"time_unix" avro:"time_unix"`
 	SumValue    float64 `mapstructure:"sum_value" avro:"sum_value"`
 	TraceID     string  `mapstructure:"trace_id" avro:"trace_id"`
 	SpanID      string  `mapstructure:"span_id" avro:"span_id"`
@@ -1421,8 +1421,8 @@ type Histogram struct {
 type HistogramDatapoint struct {
 	HistogramID   string  `avro:"histogram_id"`
 	ID            string  `avro:"id"`
-	StartTimeUnix string  `avro:"start_time_unix"`
-	TimeUnix      string  `avro:"time_unix"`
+	StartTimeUnix int64   `avro:"start_time_unix"`
+	TimeUnix      int64   `avro:"time_unix"`
 	Count         int64   `avro:"count"`
 	Sum           float64 `avro:"data_sum"`
 	Min           float64 `avro:"data_min"`
@@ -1457,7 +1457,7 @@ type HistogramDatapointExemplar struct {
 	HistogramID    string  `avro:"histogram_id"`
 	DatapointID    string  `avro:"datapoint_id"`
 	ExemplarID     string  `avro:"exemplar_id"`
-	TimeUnix       string  `avro:"time_unix"`
+	TimeUnix       int64   `avro:"time_unix"`
 	HistogramValue float64 `avro:"histogram_value"`
 	TraceID        string  `mapstructure:"trace_id" avro:"trace_id"`
 	SpanID         string  `mapstructure:"span_id" avro:"span_id"`
@@ -1506,8 +1506,8 @@ type ExponentialHistogram struct {
 type ExponentialHistogramDatapoint struct {
 	HistogramID           string  `avro:"histogram_id"`
 	ID                    string  `avro:"id"`
-	StartTimeUnix         string  `avro:"start_time_unix"`
-	TimeUnix              string  `avro:"time_unix"`
+	StartTimeUnix         int64   `avro:"start_time_unix"`
+	TimeUnix              int64   `avro:"time_unix"`
 	Count                 int64   `avro:"count"`
 	Sum                   float64 `avro:"data_sum"`
 	Min                   float64 `avro:"data_min"`
@@ -1544,7 +1544,7 @@ type ExponentialHistogramDatapointExemplar struct {
 	HistogramID    string  `avro:"histogram_id"`
 	DatapointID    string  `avro:"datapoint_id"`
 	ExemplarID     string  `avro:"exemplar_id"`
-	TimeUnix       string  `avro:"time_unix"`
+	TimeUnix       int64   `avro:"time_unix"`
 	HistogramValue float64 `avro:"histogram_value"`
 	TraceID        string  `mapstructure:"trace_id" avro:"trace_id"`
 	SpanID         string  `mapstructure:"span_id" avro:"span_id"`
@@ -1592,8 +1592,8 @@ type Summary struct {
 type SummaryDatapoint struct {
 	SummaryID     string  `avro:"summary_id"`
 	ID            string  `avro:"id"`
-	StartTimeUnix string  `avro:"start_time_unix"`
-	TimeUnix      string  `avro:"time_unix"`
+	StartTimeUnix int64   `avro:"start_time_unix"`
+	TimeUnix      int64   `avro:"time_unix"`
 	Count         int64   `avro:"count"`
 	Sum           float64 `avro:"sum"`
 	Flags         int     `avro:"flags"`
