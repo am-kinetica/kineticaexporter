@@ -154,7 +154,7 @@ func (e *kineticaLogsExporter) createLogRecord(ctx context.Context, resource pco
 	}
 
 	// create log - Body, dropped_attribute_count and flags not handled now
-	log := NewLog(uuid.New().String(), uuid.New().String(), uuid.New().String(), tags[AttributeTraceID], tags[AttributeSpanID], ts, ots, int8(severityNumber), severityText, "", 0)
+	log := NewLog(uuid.New().String(), tags[AttributeTraceID], tags[AttributeSpanID], ts, ots, int8(severityNumber), severityText, "", 0)
 	// _, err := log.insertLog()
 	// errs = append(errs, err)
 
@@ -181,7 +181,7 @@ func (e *kineticaLogsExporter) createLogRecord(ctx context.Context, resource pco
 
 	for key := range resourceAttributes {
 		vtPair := resourceAttributes[key]
-		ra := newResourceAttributeValue(log.ResourceID, key, vtPair)
+		ra := newResourceAttributeValue(log.LogID, key, vtPair)
 		resourceAttribute = append(resourceAttribute, *ra)
 	}
 
@@ -203,7 +203,7 @@ func (e *kineticaLogsExporter) createLogRecord(ctx context.Context, resource pco
 
 	for key := range scopeAttributes {
 		vtPair := scopeAttributes[key]
-		sa := newScopeAttributeValue(log.ScopeID, key, scopeName, scopeVersion, vtPair)
+		sa := newScopeAttributeValue(log.LogID, key, scopeName, scopeVersion, vtPair)
 		scopeAttribute = append(scopeAttribute, *sa)
 	}
 

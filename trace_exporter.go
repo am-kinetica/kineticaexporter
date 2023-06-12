@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/google/uuid"
 	"go.opentelemetry.io/collector/pdata/pcommon"
 	"go.opentelemetry.io/collector/pdata/ptrace"
 	"go.uber.org/multierr"
@@ -152,7 +151,7 @@ func (e *kineticaTracesExporter) createTraceRecord(ctx context.Context, resource
 	droppedEventsCount := spanRecord.DroppedEventsCount()
 
 	kiTraceRecord := new(kineticaTraceRecord)
-	span := NewSpan(uuid.New().String(), uuid.New().String(), uuid.New().String(), uuid.New().String(), tags[AttributeTraceID], tags[AttributeSpanID], fields[AttributeParentSpanID].(string), fields[AttributeTraceState].(string), fields[AttributeName].(string), fields[AttributeSpanKind].(int8), ts, endTime, int(droppedAttributesCount), int(droppedEventsCount), 0, "", 0)
+	span := NewSpan(tags[AttributeTraceID], tags[AttributeSpanID], fields[AttributeParentSpanID].(string), fields[AttributeTraceState].(string), fields[AttributeName].(string), fields[AttributeSpanKind].(int8), ts, endTime, int(droppedAttributesCount), int(droppedEventsCount), 0, "", 0)
 	kiTraceRecord.span = span
 
 	var spanAttribute []SpanAttribute
@@ -193,7 +192,7 @@ func (e *kineticaTracesExporter) createTraceRecord(ctx context.Context, resource
 
 	for key := range resourceAttributes {
 		vtPair := resourceAttributes[key]
-		ra := newResourceAttributeValue(span.ResourceID, key, vtPair)
+		ra := newResourceAttributeValue(span.SpanID, key, vtPair)
 		resourceAttribute = append(resourceAttribute, *ra)
 	}
 
@@ -217,7 +216,7 @@ func (e *kineticaTracesExporter) createTraceRecord(ctx context.Context, resource
 
 	for key := range scopeAttributes {
 		vtPair := scopeAttributes[key]
-		sa := newScopeAttributeValue(span.ScopeID, key, scopeName, scopeVersion, vtPair)
+		sa := newScopeAttributeValue(span.SpanID, key, scopeName, scopeVersion, vtPair)
 		scopeAttribute = append(scopeAttribute, *sa)
 
 	}
@@ -238,7 +237,7 @@ func (e *kineticaTracesExporter) createTraceRecord(ctx context.Context, resource
 				e.logger.Debug("invalid event attribute value", zap.String("Error", err.Error()))
 			} else {
 				eventAttributes[k] = v
-				ea := newEventAttributeValue(span.EventID, event.Name(), k, v)
+				ea := newEventAttributeValue(span.SpanID, event.Name(), k, v)
 				eventAttribute = append(eventAttribute, *ea)
 			}
 			return true
@@ -261,7 +260,7 @@ func (e *kineticaTracesExporter) createTraceRecord(ctx context.Context, resource
 				e.logger.Debug("invalid event attribute value", zap.String("Error", err.Error()))
 			} else {
 				linkAttributes[k] = v
-				la := newLinkAttributeValue(span.LinkID, span.TraceID, span.SpanID, k, v)
+				la := newLinkAttributeValue(span.SpanID, span.TraceID, span.SpanID, k, v)
 				linkAttribute = append(linkAttribute, *la)
 			}
 			return true
