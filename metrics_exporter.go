@@ -233,8 +233,6 @@ func (e *kineticaMetricsExporter) createSummaryRecord(resAttr pcommon.Map, schem
 
 	summary := &Summary{
 		SummaryID:   uuid.New().String(),
-		ResourceID:  uuid.New().String(),
-		ScopeID:     uuid.New().String(),
 		MetricName:  name,
 		Description: description,
 		Unit:        unit,
@@ -321,7 +319,7 @@ func (e *kineticaMetricsExporter) createSummaryRecord(resAttr pcommon.Map, schem
 
 	for key := range resourceAttributes {
 		vtPair := resourceAttributes[key]
-		ga, err := e.newSummaryResourceAttributeValue(summary.ResourceID, key, vtPair)
+		ga, err := e.newSummaryResourceAttributeValue(summary.SummaryID, key, vtPair)
 		if err != nil {
 			e.logger.Error(err.Error())
 		} else {
@@ -351,7 +349,7 @@ func (e *kineticaMetricsExporter) createSummaryRecord(resAttr pcommon.Map, schem
 
 	for key := range scopeAttributes {
 		vtPair := scopeAttributes[key]
-		sa, err := e.newSummaryScopeAttributeValue(summary.ScopeID, key, scopeName, scopeVersion, vtPair)
+		sa, err := e.newSummaryScopeAttributeValue(summary.SummaryID, key, scopeName, scopeVersion, vtPair)
 		if err != nil {
 			e.logger.Error(err.Error())
 		} else {
@@ -384,8 +382,6 @@ func (e *kineticaMetricsExporter) createExponentialHistogramRecord(resAttr pcomm
 
 	histogram := &ExponentialHistogram{
 		HistogramID:            uuid.New().String(),
-		ResourceID:             uuid.New().String(),
-		ScopeID:                uuid.New().String(),
 		MetricName:             name,
 		Description:            description,
 		Unit:                   unit,
@@ -542,7 +538,7 @@ func (e *kineticaMetricsExporter) createExponentialHistogramRecord(resAttr pcomm
 
 	for key := range resourceAttributes {
 		vtPair := resourceAttributes[key]
-		ga, err := e.newExponentialHistogramResourceAttributeValue(histogram.ResourceID, key, vtPair)
+		ga, err := e.newExponentialHistogramResourceAttributeValue(histogram.HistogramID, key, vtPair)
 		if err != nil {
 			e.logger.Error(err.Error())
 		} else {
@@ -572,7 +568,7 @@ func (e *kineticaMetricsExporter) createExponentialHistogramRecord(resAttr pcomm
 
 	for key := range scopeAttributes {
 		vtPair := scopeAttributes[key]
-		sa, err := e.newExponentialHistogramScopeAttributeValue(histogram.ScopeID, key, scopeName, scopeVersion, vtPair)
+		sa, err := e.newExponentialHistogramScopeAttributeValue(histogram.HistogramID, key, scopeName, scopeVersion, vtPair)
 		if err != nil {
 			e.logger.Error(err.Error())
 		} else {
@@ -608,8 +604,6 @@ func (e *kineticaMetricsExporter) createHistogramRecord(resAttr pcommon.Map, sch
 
 	histogram := &Histogram{
 		HistogramID:            uuid.New().String(),
-		ResourceID:             uuid.New().String(),
-		ScopeID:                uuid.New().String(),
 		MetricName:             name,
 		Description:            description,
 		Unit:                   unit,
@@ -758,7 +752,7 @@ func (e *kineticaMetricsExporter) createHistogramRecord(resAttr pcommon.Map, sch
 
 		for key := range resourceAttributes {
 			vtPair := resourceAttributes[key]
-			ga, err := e.newHistogramResourceAttributeValue(histogram.ResourceID, key, vtPair)
+			ga, err := e.newHistogramResourceAttributeValue(histogram.HistogramID, key, vtPair)
 			if err != nil {
 				e.logger.Error(err.Error())
 			} else {
@@ -792,7 +786,7 @@ func (e *kineticaMetricsExporter) createHistogramRecord(resAttr pcommon.Map, sch
 
 		for key := range scopeAttributes {
 			vtPair := scopeAttributes[key]
-			sa, err := e.newHistogramScopeAttributeValue(histogram.ScopeID, key, scopeName, scopeVersion, vtPair)
+			sa, err := e.newHistogramScopeAttributeValue(histogram.HistogramID, key, scopeName, scopeVersion, vtPair)
 			if err != nil {
 				e.logger.Error(err.Error())
 			} else {
@@ -831,8 +825,6 @@ func (e *kineticaMetricsExporter) createSumRecord(resAttr pcommon.Map, schemaURL
 
 	sum := &Sum{
 		SumID:                  uuid.New().String(),
-		ResourceID:             uuid.New().String(),
-		ScopeID:                uuid.New().String(),
 		MetricName:             name,
 		Description:            description,
 		Unit:                   unit,
@@ -958,7 +950,7 @@ func (e *kineticaMetricsExporter) createSumRecord(resAttr pcommon.Map, schemaURL
 
 		for key := range resourceAttributes {
 			vtPair := resourceAttributes[key]
-			ga, err := e.newSumResourceAttributeValue(sum.ResourceID, key, vtPair)
+			ga, err := e.newSumResourceAttributeValue(sum.SumID, key, vtPair)
 			if err != nil {
 				e.logger.Error(err.Error())
 			} else {
@@ -991,7 +983,7 @@ func (e *kineticaMetricsExporter) createSumRecord(resAttr pcommon.Map, schemaURL
 
 		for key := range scopeAttributes {
 			vtPair := scopeAttributes[key]
-			sa, err := e.newSumScopeAttributeValue(sum.ScopeID, key, scopeName, scopeVersion, vtPair)
+			sa, err := e.newSumScopeAttributeValue(sum.SumID, key, scopeName, scopeVersion, vtPair)
 			if err != nil {
 				e.logger.Error(err.Error())
 			} else {
@@ -1003,7 +995,7 @@ func (e *kineticaMetricsExporter) createSumRecord(resAttr pcommon.Map, schemaURL
 	} else {
 		// No attributes found - just basic scope
 		kiSumRecord.sumScopeAttribute = append(kiSumRecord.sumScopeAttribute, SumScopeAttribute{
-			ScopeID:        sum.ScopeID,
+			SumID:          sum.SumID,
 			ScopeName:      scopeName,
 			ScopeVersion:   scopeVersion,
 			Key:            "",
@@ -1036,8 +1028,6 @@ func (e *kineticaMetricsExporter) createGaugeRecord(resAttr pcommon.Map, schemaU
 
 	gauge := &Gauge{
 		GaugeID:     uuid.New().String(),
-		ResourceID:  uuid.New().String(),
-		ScopeID:     uuid.New().String(),
 		MetricName:  name,
 		Description: description,
 		Unit:        unit,
@@ -1161,7 +1151,7 @@ func (e *kineticaMetricsExporter) createGaugeRecord(resAttr pcommon.Map, schemaU
 		e.logger.Info("Resource Attributes to be added ->", zap.Any("Attributes", resourceAttributes))
 		for key := range resourceAttributes {
 			vtPair := resourceAttributes[key]
-			ga, err := e.newGaugeResourceAttributeValue(gauge.ResourceID, key, vtPair)
+			ga, err := e.newGaugeResourceAttributeValue(gauge.GaugeID, key, vtPair)
 
 			e.logger.Info("New resource attribute ->", zap.Any("Attribute", ga))
 
@@ -1201,7 +1191,7 @@ func (e *kineticaMetricsExporter) createGaugeRecord(resAttr pcommon.Map, schemaU
 		e.logger.Info("Scope Attributes to be added ->", zap.Any("Attributes", scopeAttributes))
 		for key := range scopeAttributes {
 			vtPair := scopeAttributes[key]
-			ga, err := e.newGaugeScopeAttributeValue(gauge.ScopeID, key, scopeName, scopeVersion, vtPair)
+			ga, err := e.newGaugeScopeAttributeValue(gauge.GaugeID, key, scopeName, scopeVersion, vtPair)
 
 			e.logger.Info("New scope attribute ->", zap.Any("Attribute", ga))
 
@@ -1218,7 +1208,7 @@ func (e *kineticaMetricsExporter) createGaugeRecord(resAttr pcommon.Map, schemaU
 	} else {
 		// No attributes found - just basic scope
 		kiGaugeRecord.scopeAttribute = append(kiGaugeRecord.scopeAttribute, GaugeScopeAttribute{
-			ScopeID:        gauge.ScopeID,
+			GaugeID:        gauge.GaugeID,
 			ScopeName:      scopeName,
 			ScopeVersion:   scopeVersion,
 			Key:            "",
@@ -1373,7 +1363,7 @@ func (e *kineticaMetricsExporter) newGaugeDatapointExemplarAttributeValue(gaugeI
 	return sa, nil
 }
 
-func (e *kineticaMetricsExporter) newHistogramResourceAttributeValue(ResourceID, key string, vtPair ValueTypePair) (*HistogramResourceAttribute, error) {
+func (e *kineticaMetricsExporter) newHistogramResourceAttributeValue(HistogramID string, key string, vtPair ValueTypePair) (*HistogramResourceAttribute, error) {
 	var av *AttributeValue
 	var err error
 
@@ -1382,11 +1372,11 @@ func (e *kineticaMetricsExporter) newHistogramResourceAttributeValue(ResourceID,
 		return nil, err
 	}
 
-	ra := &HistogramResourceAttribute{ResourceID, key, *av}
+	ra := &HistogramResourceAttribute{HistogramID, key, *av}
 	return ra, nil
 }
 
-func (e *kineticaMetricsExporter) newHistogramScopeAttributeValue(scopeID string, key string, scopeName string, scopeVersion string, vtPair ValueTypePair) (*HistogramScopeAttribute, error) {
+func (e *kineticaMetricsExporter) newHistogramScopeAttributeValue(histogramID string, key string, scopeName string, scopeVersion string, vtPair ValueTypePair) (*HistogramScopeAttribute, error) {
 	var av *AttributeValue
 	var err error
 
@@ -1395,11 +1385,11 @@ func (e *kineticaMetricsExporter) newHistogramScopeAttributeValue(scopeID string
 		return nil, err
 	}
 
-	sa := &HistogramScopeAttribute{scopeID, key, scopeName, scopeVersion, *av}
+	sa := &HistogramScopeAttribute{histogramID, key, scopeName, scopeVersion, *av}
 	return sa, nil
 }
 
-func (e *kineticaMetricsExporter) newExponentialHistogramResourceAttributeValue(ResourceID, key string, vtPair ValueTypePair) (*ExponentialHistogramResourceAttribute, error) {
+func (e *kineticaMetricsExporter) newExponentialHistogramResourceAttributeValue(HistogramID string, key string, vtPair ValueTypePair) (*ExponentialHistogramResourceAttribute, error) {
 	var av *AttributeValue
 	var err error
 
@@ -1408,11 +1398,11 @@ func (e *kineticaMetricsExporter) newExponentialHistogramResourceAttributeValue(
 		return nil, err
 	}
 
-	ra := &ExponentialHistogramResourceAttribute{ResourceID, key, *av}
+	ra := &ExponentialHistogramResourceAttribute{HistogramID, key, *av}
 	return ra, nil
 }
 
-func (e *kineticaMetricsExporter) newExponentialHistogramScopeAttributeValue(scopeID string, key string, scopeName string, scopeVersion string, vtPair ValueTypePair) (*ExponentialHistogramScopeAttribute, error) {
+func (e *kineticaMetricsExporter) newExponentialHistogramScopeAttributeValue(histogramID string, key string, scopeName string, scopeVersion string, vtPair ValueTypePair) (*ExponentialHistogramScopeAttribute, error) {
 	var av *AttributeValue
 	var err error
 
@@ -1421,11 +1411,11 @@ func (e *kineticaMetricsExporter) newExponentialHistogramScopeAttributeValue(sco
 		return nil, err
 	}
 
-	sa := &ExponentialHistogramScopeAttribute{scopeID, key, scopeName, scopeVersion, *av}
+	sa := &ExponentialHistogramScopeAttribute{histogramID, key, scopeName, scopeVersion, *av}
 	return sa, nil
 }
 
-func (e *kineticaMetricsExporter) newSummaryResourceAttributeValue(ResourceID, key string, vtPair ValueTypePair) (*SummaryResourceAttribute, error) {
+func (e *kineticaMetricsExporter) newSummaryResourceAttributeValue(SummaryID string, key string, vtPair ValueTypePair) (*SummaryResourceAttribute, error) {
 	var av *AttributeValue
 	var err error
 
@@ -1434,11 +1424,11 @@ func (e *kineticaMetricsExporter) newSummaryResourceAttributeValue(ResourceID, k
 		return nil, err
 	}
 
-	ra := &SummaryResourceAttribute{ResourceID, key, *av}
+	ra := &SummaryResourceAttribute{SummaryID, key, *av}
 	return ra, nil
 }
 
-func (e *kineticaMetricsExporter) newSummaryScopeAttributeValue(scopeID string, key string, scopeName string, scopeVersion string, vtPair ValueTypePair) (*SummaryScopeAttribute, error) {
+func (e *kineticaMetricsExporter) newSummaryScopeAttributeValue(summaryID string, key string, scopeName string, scopeVersion string, vtPair ValueTypePair) (*SummaryScopeAttribute, error) {
 	var av *AttributeValue
 	var err error
 
@@ -1447,7 +1437,7 @@ func (e *kineticaMetricsExporter) newSummaryScopeAttributeValue(scopeID string, 
 		return nil, err
 	}
 
-	sa := &SummaryScopeAttribute{scopeID, key, scopeName, scopeVersion, *av}
+	sa := &SummaryScopeAttribute{summaryID, key, scopeName, scopeVersion, *av}
 	return sa, nil
 
 }

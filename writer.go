@@ -135,8 +135,6 @@ func (attributevalue *AttributeValue) SetBytesValue(BytesValue []byte) *Attribut
 // Log
 type Log struct {
 	LogID                string `mapstructure:"log_id" avro:"log_id"`
-	ResourceID           string `mapstructure:"resource_id" avro:"resource_id"`
-	ScopeID              string `mapstructure:"scope_id" avro:"scope_id"`
 	TraceID              string `mapstructure:"trace_id" avro:"trace_id"`
 	SpanID               string `mapstructure:"span_id" avro:"span_id"`
 	TimeUnixNano         int64  `mapstructure:"time_unix_nano" avro:"time_unix_nano"`
@@ -161,12 +159,10 @@ type Log struct {
 //	@param Body
 //	@param Flags
 //	@return *Logs
-func NewLog(LogID string, ResourceID string, ScopeID string, TraceID string, SpanID string, TimeUnixNano int64, ObservedTimeUnixNano int64, SeverityID int8, SeverityText string, Body string, Flags int) *Log {
+func NewLog(LogID string, TraceID string, SpanID string, TimeUnixNano int64, ObservedTimeUnixNano int64, SeverityID int8, SeverityText string, Body string, Flags int) *Log {
 	o := new(Log)
 
 	o.LogID = LogID
-	o.ResourceID = ResourceID
-	o.ScopeID = ScopeID
 	o.TraceID = TraceID
 	o.SpanID = SpanID
 	o.TimeUnixNano = TimeUnixNano
@@ -185,22 +181,6 @@ func NewLog(LogID string, ResourceID string, ScopeID string, TraceID string, Spa
 //	@return uuid.UUID
 func (logs *Log) GetLogID() string {
 	return logs.LogID
-}
-
-// GetResourceID
-//
-//	@receiver logs
-//	@return uuid.UUID
-func (logs *Log) GetResourceID() string {
-	return logs.ResourceID
-}
-
-// GetScopeID
-//
-//	@receiver logs
-//	@return uuid.UUID
-func (logs *Log) GetScopeID() string {
-	return logs.ScopeID
 }
 
 // GetTraceID
@@ -274,26 +254,6 @@ func (logs *Log) GetFlags() int {
 //	@return *Logs
 func (logs *Log) SetLogID(LogID string) *Log {
 	logs.LogID = LogID
-	return logs
-}
-
-// SetResourceID
-//
-//	@receiver logs
-//	@param ResourceID
-//	@return *Logs
-func (logs *Log) SetResourceID(ResourceID string) *Log {
-	logs.ResourceID = ResourceID
-	return logs
-}
-
-// SetScopeID
-//
-//	@receiver logs
-//	@param ScopeID
-//	@return *Logs
-func (logs *Log) SetScopeID(ScopeID string) *Log {
-	logs.ScopeID = ScopeID
 	return logs
 }
 
@@ -401,7 +361,7 @@ func NewLogAttribute(logID string, key string, attributes AttributeValue) *LogAt
 
 // ResourceAttribute
 type ResourceAttribute struct {
-	ResourceID     string `avro:"resource_id"`
+	LogID          string `avro:"log_id"`
 	Key            string `avro:"key"`
 	AttributeValue `mapstructure:",squash"`
 }
@@ -412,9 +372,9 @@ type ResourceAttribute struct {
 //	@param key
 //	@param attributes
 //	@return *LogsResourceAttribute
-func NewResourceAttribute(resourceID string, key string, attributes AttributeValue) *ResourceAttribute {
+func NewResourceAttribute(logID string, key string, attributes AttributeValue) *ResourceAttribute {
 	o := new(ResourceAttribute)
-	o.ResourceID = resourceID
+	o.LogID = logID
 	o.Key = key
 	o.AttributeValue = attributes
 	return o
@@ -424,7 +384,7 @@ func NewResourceAttribute(resourceID string, key string, attributes AttributeVal
 
 // ScopeAttribute
 type ScopeAttribute struct {
-	ScopeID        string `avro:"scope_id"`
+	LogID          string `avro:"log_id"`
 	ScopeName      string `avro:"scope_name"`
 	ScopeVersion   string `avro:"scope_version"`
 	Key            string `avro:"key"`
@@ -439,9 +399,9 @@ type ScopeAttribute struct {
 //	@param scopeVersion
 //	@param attributes
 //	@return *LogsScopeAttribute
-func NewScopeAttribute(scopeID string, key string, scopeName string, scopeVersion string, attributes AttributeValue) *ScopeAttribute {
+func NewScopeAttribute(logID string, key string, scopeName string, scopeVersion string, attributes AttributeValue) *ScopeAttribute {
 	o := new(ScopeAttribute)
-	o.ScopeID = uuid.New().String()
+	o.LogID = uuid.New().String()
 	o.Key = key
 	o.ScopeName = scopeName
 	o.ScopeVersion = scopeVersion
@@ -551,84 +511,6 @@ func GetGpuDbInst(cfg *Config) *gpudb.Gpudb {
 
 }
 
-// insertLog //
-//
-//	@receiver logs
-//	@return *Logs
-//	@return error
-func (logs *Log) insertLog() (*Log, error) {
-	if logs.LogID == "" {
-		logs.LogID = uuid.New().String()
-	}
-
-	statement := fmt.Sprintf(InsertLog, Writer.cfg.Schema, logs.LogID, logs.ResourceID, logs.ScopeID, logs.TraceID, logs.SpanID, logs.TimeUnixNano, logs.ObservedTimeUnixNano, logs.SeverityID, logs.SeverityText, logs.Body, logs.Flags)
-	gpudb := Writer.Db
-	_, err := gpudb.ExecuteSqlRaw(context.TODO(), statement, 0, 0, "", nil)
-	if err != nil {
-		return nil, err
-	}
-	return logs, nil
-}
-
-// insertLogAttribute //
-//
-//	@receiver logAttribute
-//	@param logID
-//	@return error
-func (logAttribute *LogAttribute) insertLogAttribute() error {
-
-	if logAttribute.LogID == "" {
-		logAttribute.LogID = uuid.New().String()
-	}
-
-	statement := fmt.Sprintf(InsertLogAttribute, Writer.cfg.Schema, logAttribute.LogID, logAttribute.Key, logAttribute.AttributeValue.StringValue, logAttribute.BoolValue, logAttribute.AttributeValue.IntValue, logAttribute.AttributeValue.DoubleValue, logAttribute.AttributeValue.BytesValue)
-	gpudb := Writer.Db
-	_, err := gpudb.ExecuteSqlRaw(context.TODO(), statement, 0, 0, "", nil)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-// insertLogResourceAttribute //
-//
-//	@receiver logResourceAttribute
-//	@return error
-func (logResourceAttribute *ResourceAttribute) insertLogResourceAttribute() error {
-
-	if logResourceAttribute.ResourceID == "" {
-		logResourceAttribute.ResourceID = uuid.New().String()
-	}
-
-	statement := fmt.Sprintf(InsertLogResourceAttribute, Writer.cfg.Schema, logResourceAttribute.ResourceID, logResourceAttribute.Key, logResourceAttribute.AttributeValue.StringValue, logResourceAttribute.GetBoolValue(), logResourceAttribute.GetIntValue(), logResourceAttribute.GetDoubleValue(), logResourceAttribute.GetBytesValue())
-	gpudb := Writer.Db
-	_, err := gpudb.ExecuteSqlRaw(context.TODO(), statement, 0, 0, "", nil)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// insertLogScopeAttribute //
-//
-//	@receiver logScopeAttribute
-//	@return error
-func (logScopeAttribute *ScopeAttribute) insertLogScopeAttribute() error {
-	if logScopeAttribute.ScopeID == "" {
-		logScopeAttribute.ScopeID = uuid.New().String()
-	}
-
-	statement := fmt.Sprintf(InsertLogScopeAttribute, Writer.cfg.Schema, logScopeAttribute.ScopeID, logScopeAttribute.ScopeName, logScopeAttribute.ScopeVersion, logScopeAttribute.Key, logScopeAttribute.GetStringValue(), logScopeAttribute.GetBoolValue(), logScopeAttribute.GetIntValue(), logScopeAttribute.GetDoubleValue(), logScopeAttribute.GetBytesValue())
-	gpudb := Writer.Db
-	_, err := gpudb.ExecuteSqlRaw(context.TODO(), statement, 0, 0, "", nil)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 // END Log Handling
 
 // BEGIN Trace Handling
@@ -636,10 +518,6 @@ func (logScopeAttribute *ScopeAttribute) insertLogScopeAttribute() error {
 // Span
 type Span struct {
 	ID                     string `mapstructure:"id" avro:"id" `
-	ResourceID             string `mapstructure:"resource_id" avro:"resource_id" `
-	ScopeID                string `mapstructure:"scope_id" avro:"scope_id" `
-	EventID                string `mapstructure:"event_id" avro:"event_id" `
-	LinkID                 string `mapstructure:"link_id" avro:"link_id" `
 	TraceID                string `mapstructure:"trace_id" avro:"trace_id"`
 	SpanID                 string `mapstructure:"span_id" avro:"span_id"`
 	ParentSpanID           string `mapstructure:"parent_span_id" avro:"parent_span_id"`
@@ -675,13 +553,9 @@ type Span struct {
 //	@param message
 //	@param statusCode
 //	@return *Span
-func NewSpan(resourceID string, scopeID string, eventID string, linkID string, traceID string, spanID string, parentSpanID string, traceState string, name string, spanKind int8, startTimeUnixNano int64, endTimeUnixNano int64, droppedAttributeCount int, droppedEventCount int, droppedLinkCount int, message string, statusCode int8) *Span {
+func NewSpan(traceID string, spanID string, parentSpanID string, traceState string, name string, spanKind int8, startTimeUnixNano int64, endTimeUnixNano int64, droppedAttributeCount int, droppedEventCount int, droppedLinkCount int, message string, statusCode int8) *Span {
 	o := new(Span)
 	o.ID = uuid.New().String()
-	o.ResourceID = resourceID
-	o.ScopeID = scopeID
-	o.EventID = eventID
-	o.LinkID = linkID
 	o.TraceID = traceID
 	o.SpanID = spanID
 	o.ParentSpanID = parentSpanID
@@ -704,38 +578,6 @@ func NewSpan(resourceID string, scopeID string, eventID string, linkID string, t
 //	@return uuid.UUID
 func (span *Span) GetID() string {
 	return span.ID
-}
-
-// GetResourceID
-//
-//	@receiver span
-//	@return uuid.UUID
-func (span *Span) GetResourceID() string {
-	return span.ResourceID
-}
-
-// GetScopeID
-//
-//	@receiver span
-//	@return uuid.UUID
-func (span *Span) GetScopeID() string {
-	return span.ScopeID
-}
-
-// GetEventID
-//
-//	@receiver span
-//	@return uuid.UUID
-func (span *Span) GetEventID() string {
-	return span.EventID
-}
-
-// GetLinkID
-//
-//	@receiver span
-//	@return uuid.UUID
-func (span *Span) GetLinkID() string {
-	return span.LinkID
 }
 
 // GetTraceID
@@ -849,46 +691,6 @@ func (span *Span) GetStatusCode() int8 {
 //	@return *Span
 func (span *Span) SetID(ID string) *Span {
 	span.ID = ID
-	return span
-}
-
-// SetResourceID
-//
-//	@receiver span
-//	@param resourceID
-//	@return *Span
-func (span *Span) SetResourceID(resourceID string) *Span {
-	span.ResourceID = resourceID
-	return span
-}
-
-// SetScopeID
-//
-//	@receiver span
-//	@param scopeID
-//	@return *Span
-func (span *Span) SetScopeID(scopeID string) *Span {
-	span.ScopeID = scopeID
-	return span
-}
-
-// SetEventID
-//
-//	@receiver span
-//	@param eventID
-//	@return *Span
-func (span *Span) SetEventID(eventID string) *Span {
-	span.EventID = eventID
-	return span
-}
-
-// SetLinkID
-//
-//	@receiver span
-//	@param linkID
-//	@return *Span
-func (span *Span) SetLinkID(linkID string) *Span {
-	span.LinkID = linkID
 	return span
 }
 
@@ -1022,26 +824,6 @@ func (span *Span) SetStatusCode(statusCode int8) *Span {
 	return span
 }
 
-// insertTraceSpan //
-//
-//	@receiver span
-//	@return uuid.UUID
-//	@return error
-func (span *Span) insertTraceSpan() (string, error) {
-	if span.ID == "" {
-		span.ID = uuid.New().String()
-	}
-
-	statement := fmt.Sprintf(InsertTraceSpan, Writer.cfg.Schema, span.ID, span.ResourceID, span.ScopeID, span.EventID, span.LinkID, span.TraceID, span.SpanID, span.ParentSpanID, span.TraceState, span.Name, span.SpanKind, span.StartTimeUnixNano, span.EndTimeUnixNano, span.DroppedAttributesCount, span.DroppedEventsCount, span.DroppedLinksCount, span.Message, span.StatusCode)
-	gpudb := Writer.Db
-	_, err := gpudb.ExecuteSqlRaw(context.TODO(), statement, 0, 0, "", nil)
-	if err != nil {
-		return "", err
-	}
-	return span.ID, nil
-
-}
-
 // SpanAttribute
 type SpanAttribute struct {
 	SpanID         string `avro:"span_id"`
@@ -1084,49 +866,30 @@ func (spanAttribute *SpanAttribute) insertSpanAttribute() (string, error) {
 
 // TraceResourceAttribute
 type TraceResourceAttribute struct {
-	ResourceID     string `avro:"resource_id"`
+	SpanID         string `avro:"span_id"`
 	Key            string `avro:"key"`
 	AttributeValue `mapstructure:"",squash`
 }
 
 // NewTraceResourceAttribute Constructor for TraceResourceAttribute
 //
+//	@param SpanID
 //	@param key
 //	@param attributes
 //	@return *TraceResourceAttribute
-func NewTraceResourceAttribute(key string, attributes AttributeValue) *TraceResourceAttribute {
+func NewTraceResourceAttribute(SpanID string, key string, attributes AttributeValue) *TraceResourceAttribute {
 	o := new(TraceResourceAttribute)
-	o.ResourceID = uuid.New().String()
+	o.SpanID = SpanID
 	o.Key = key
 	o.AttributeValue = attributes
 	return o
-}
-
-// insertTraceResourceAttribute //
-//
-//	@receiver resourceAttribute
-//	@return uuid.UUID
-//	@return error
-func (resourceAttribute *ResourceAttribute) insertTraceResourceAttribute() (string, error) {
-	if resourceAttribute.ResourceID == "" {
-		resourceAttribute.ResourceID = uuid.New().String()
-	}
-
-	statement := fmt.Sprintf(InsertTraceResourceAttribute, Writer.cfg.Schema, resourceAttribute.ResourceID, resourceAttribute.Key, resourceAttribute.GetStringValue(), resourceAttribute.BoolValue, resourceAttribute.GetIntValue(), resourceAttribute.GetDoubleValue(), resourceAttribute.GetBytesValue())
-	gpudb := Writer.Db
-	_, err := gpudb.ExecuteSqlRaw(context.TODO(), statement, 0, 0, "", nil)
-	if err != nil {
-		return "", err
-	}
-
-	return resourceAttribute.ResourceID, nil
 }
 
 // End TraceResourceAttribute
 
 // TraceScopeAttribute
 type TraceScopeAttribute struct {
-	ScopeID        string `avro:"scope_id"`
+	SpanID         string `avro:"span_id"`
 	ScopeName      string `avro:"scope_name"`
 	ScopeVersion   string `avro:"scope_version"`
 	Key            string `avro:"key"`
@@ -1140,9 +903,9 @@ type TraceScopeAttribute struct {
 //	@param scopeVersion
 //	@param attributes
 //	@return *TraceScopeAttribute
-func NewtraceScopeAttribute(key string, scopeName string, scopeVersion string, attributes AttributeValue) *TraceScopeAttribute {
+func NewtraceScopeAttribute(SpanID string, key string, scopeName string, scopeVersion string, attributes AttributeValue) *TraceScopeAttribute {
 	o := new(TraceScopeAttribute)
-	o.ScopeID = uuid.New().String()
+	o.SpanID = SpanID
 	o.Key = key
 	o.ScopeName = scopeName
 	o.ScopeVersion = scopeVersion
@@ -1150,31 +913,11 @@ func NewtraceScopeAttribute(key string, scopeName string, scopeVersion string, a
 	return o
 }
 
-// insertTraceScopeAttribute //
-//
-//	@receiver traceScopeAttribute
-//	@return uuid.UUID
-//	@return error
-func (traceScopeAttribute *ScopeAttribute) insertTraceScopeAttribute() (string, error) {
-	if traceScopeAttribute.ScopeID == "" {
-		traceScopeAttribute.ScopeID = uuid.New().String()
-	}
-
-	statement := fmt.Sprintf(InsertTraceScopeAttribute, Writer.cfg.Schema, traceScopeAttribute.ScopeID, traceScopeAttribute.ScopeName, traceScopeAttribute.ScopeVersion, traceScopeAttribute.Key, traceScopeAttribute.GetStringValue(), traceScopeAttribute.GetBoolValue(), traceScopeAttribute.GetIntValue(), traceScopeAttribute.GetDoubleValue(), traceScopeAttribute.GetBytesValue())
-	gpudb := Writer.Db
-	_, err := gpudb.ExecuteSqlRaw(context.TODO(), statement, 0, 0, "", nil)
-	if err != nil {
-		return "", err
-	}
-
-	return traceScopeAttribute.ScopeID, nil
-}
-
 // END TraceScopeAttribute
 
 // EventAttribute
 type EventAttribute struct {
-	EventID        string `avro:"event_id"`
+	SpanID         string `avro:"span_id"`
 	EventName      string `avro:"event_name"`
 	Key            string `avro:"key"`
 	AttributeValue `mapstructure:",squash"`
@@ -1186,40 +929,20 @@ type EventAttribute struct {
 //	@param eventName
 //	@param attributes
 //	@return *TraceEventAttribute
-func NewEventAttribute(eventID string, eventName string, key string, attributes AttributeValue) *EventAttribute {
+func NewEventAttribute(spanID string, eventName string, key string, attributes AttributeValue) *EventAttribute {
 	o := new(EventAttribute)
-	o.EventID = eventID
+	o.SpanID = spanID
 	o.Key = key
 	o.EventName = eventName
 	o.AttributeValue = attributes
 	return o
 }
 
-// insertTraceEventAttribute insertTraceScopeAttribute insertLogScopeAttribute //
-//
-//	@receiver traceEventAttribute
-//	@return uuid.UUID
-//	@return error
-func (traceEventAttribute *EventAttribute) insertTraceEventAttribute() (string, error) {
-	if traceEventAttribute.EventID == "" {
-		traceEventAttribute.EventID = uuid.New().String()
-	}
-
-	statement := fmt.Sprintf(InsertTraceEventAttribute, Writer.cfg.Schema, traceEventAttribute.EventID, traceEventAttribute.EventName, traceEventAttribute.Key, traceEventAttribute.GetStringValue(), traceEventAttribute.GetBoolValue(), traceEventAttribute.GetIntValue(), traceEventAttribute.GetDoubleValue(), traceEventAttribute.GetBytesValue())
-	gpudb := Writer.Db
-	_, err := gpudb.ExecuteSqlRaw(context.TODO(), statement, 0, 0, "", nil)
-	if err != nil {
-		return "", err
-	}
-
-	return traceEventAttribute.EventID, err
-}
-
 // END TraceEventAttribute
 
 // LinkAttribute
 type LinkAttribute struct {
-	LinkID         string `avro:"link_id"`
+	LinkSpanID     string `avro:"link_span_id"`
 	TraceID        string `avro:"trace_id"`
 	SpanID         string `avro:"span_id"`
 	Key            string `avro:"key"`
@@ -1234,33 +957,14 @@ type LinkAttribute struct {
 //	@param spanID
 //	@param attributes
 //	@return *LinkAttribute
-func NewLinkAttribute(linkID string, key string, traceID string, spanID string, attributes AttributeValue) *LinkAttribute {
+func NewLinkAttribute(linkSpanID string, key string, traceID string, spanID string, attributes AttributeValue) *LinkAttribute {
 	o := new(LinkAttribute)
-	o.LinkID = linkID
+	o.LinkSpanID = linkSpanID
 	o.Key = key
 	o.TraceID = traceID
 	o.SpanID = spanID
 	o.AttributeValue = attributes
 	return o
-}
-
-// insertTraceLinkAttribute  //
-//
-//	@receiver traceLinkAttribute
-//	@return uuid.UUID
-func (traceLinkAttribute *LinkAttribute) insertTraceLinkAttribute() (string, error) {
-	if traceLinkAttribute.LinkID == "" {
-		traceLinkAttribute.LinkID = uuid.New().String()
-	}
-
-	statement := fmt.Sprintf(InsertTraceLinkAttribute, Writer.cfg.Schema, traceLinkAttribute.LinkID, traceLinkAttribute.TraceID, traceLinkAttribute.SpanID, traceLinkAttribute.Key, traceLinkAttribute.GetStringValue(), traceLinkAttribute.GetBoolValue(), traceLinkAttribute.GetIntValue(), traceLinkAttribute.GetDoubleValue(), traceLinkAttribute.GetBytesValue())
-	gpudb := Writer.Db
-	_, err := gpudb.ExecuteSqlRaw(context.TODO(), statement, 0, 0, "", nil)
-	if err != nil {
-		return "", err
-	}
-
-	return traceLinkAttribute.LinkID, nil
 }
 
 // END LinkAttribute
@@ -1272,8 +976,6 @@ func (traceLinkAttribute *LinkAttribute) insertTraceLinkAttribute() (string, err
 // Gauge
 type Gauge struct {
 	GaugeID     string `avro:"gauge_id"`
-	ResourceID  string `avro:"resource_id"`
-	ScopeID     string `avro:"scope_id"`
 	MetricName  string `avro:"metric_name"`
 	Description string `avro:"metric_description"`
 	Unit        string `avro:"metric_unit"`
@@ -1319,14 +1021,14 @@ type GaugeDataPointExemplarAttribute struct {
 
 // GaugeResourceAttribute
 type GaugeResourceAttribute struct {
-	ResourceID     string `avro:"resource_id"`
+	GaugeID        string `avro:"gauge_id"`
 	Key            string `avro:"key"`
 	AttributeValue `mapstructure:",squash"`
 }
 
 // GaugeScopeAttribute
 type GaugeScopeAttribute struct {
-	ScopeID        string `avro:"scope_id"`
+	GaugeID        string `avro:"gauge_id"`
 	ScopeName      string `avro:"name"`
 	ScopeVersion   string `avro:"version"`
 	Key            string `avro:"key"`
@@ -1340,8 +1042,6 @@ type GaugeScopeAttribute struct {
 // Sum
 type Sum struct {
 	SumID                  string `avro:"sum_id"`
-	ResourceID             string `avro:"resource_id"`
-	ScopeID                string `avro:"scope_id"`
 	MetricName             string `avro:"metric_name"`
 	Description            string `avro:"metric_description"`
 	Unit                   string `avro:"metric_unit"`
@@ -1388,14 +1088,14 @@ type SumDataPointExemplarAttribute struct {
 
 // SumResourceAttribute
 type SumResourceAttribute struct {
-	ResourceID     string `avro:"resource_id"`
+	SumID          string `avro:"sum_id"`
 	Key            string `avro:"key"`
 	AttributeValue `mapstructure:",squash"`
 }
 
 // SumScopeAttribute
 type SumScopeAttribute struct {
-	ScopeID        string `avro:"scope_id"`
+	SumID          string `avro:"sum_id"`
 	ScopeName      string `avro:"name"`
 	ScopeVersion   string `avro:"version"`
 	Key            string `avro:"key"`
@@ -1409,8 +1109,6 @@ type SumScopeAttribute struct {
 // Histogram
 type Histogram struct {
 	HistogramID            string `avro:"histogram_id"`
-	ResourceID             string `avro:"resource_id"`
-	ScopeID                string `avro:"scope_id"`
 	MetricName             string `avro:"metric_name"`
 	Description            string `avro:"metric_description"`
 	Unit                   string `avro:"metric_unit"`
@@ -1474,14 +1172,14 @@ type HistogramDataPointExemplarAttribute struct {
 
 // HistogramResourceAttribute
 type HistogramResourceAttribute struct {
-	ResourceID     string `avro:"resource_id"`
+	HistogramID    string `avro:"histogram_id"`
 	Key            string `avro:"key"`
 	AttributeValue `mapstructure:",squash"`
 }
 
 // HistogramScopeAttribute
 type HistogramScopeAttribute struct {
-	ScopeID        string `avro:"scope_id"`
+	HistogramID    string `avro:"histogram_id"`
 	ScopeName      string `avro:"name"`
 	ScopeVersion   string `avro:"version"`
 	Key            string `avro:"key"`
@@ -1495,8 +1193,6 @@ type HistogramScopeAttribute struct {
 // ExponentialHistogram
 type ExponentialHistogram struct {
 	HistogramID            string `avro:"histogram_id"`
-	ResourceID             string `avro:"resource_id"`
-	ScopeID                string `avro:"scope_id"`
 	MetricName             string `avro:"metric_name"`
 	Description            string `avro:"metric_description"`
 	Unit                   string `avro:"metric_unit"`
@@ -1561,14 +1257,14 @@ type ExponentialHistogramDataPointExemplarAttribute struct {
 
 // HistogramResourceAttribute
 type ExponentialHistogramResourceAttribute struct {
-	ResourceID     string `avro:"resource_id"`
+	HistogramID    string `avro:"histogram_id"`
 	Key            string `avro:"key"`
 	AttributeValue `mapstructure:",squash"`
 }
 
 // HistogramScopeAttribute
 type ExponentialHistogramScopeAttribute struct {
-	ScopeID        string `avro:"scope_id"`
+	HistogramID    string `avro:"histogram_id"`
 	ScopeName      string `avro:"name"`
 	ScopeVersion   string `avro:"version"`
 	Key            string `avro:"key"`
@@ -1581,8 +1277,6 @@ type ExponentialHistogramScopeAttribute struct {
 
 type Summary struct {
 	SummaryID   string `avro:"summary_id"`
-	ResourceID  string `avro:"resource_id"`
-	ScopeID     string `avro:"scope_id"`
 	MetricName  string `avro:"metric_name"`
 	Description string `avro:"metric_description"`
 	Unit        string `avro:"metric_unit"`
@@ -1617,14 +1311,14 @@ type SummaryDatapointQuantileValues struct {
 
 // SummaryResourceAttribute
 type SummaryResourceAttribute struct {
-	ResourceID     string `avro:"resource_id"`
+	SummaryID      string `avro:"summary_id"`
 	Key            string `avro:"key"`
 	AttributeValue `mapstructure:",squash"`
 }
 
 // SummaryScopeAttribute
 type SummaryScopeAttribute struct {
-	ScopeID        string `avro:"scope_id"`
+	SummaryID      string `avro:"summary_id"`
 	ScopeName      string `avro:"name"`
 	ScopeVersion   string `avro:"version"`
 	Key            string `avro:"key"`
