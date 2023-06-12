@@ -1220,7 +1220,7 @@ func (e *kineticaMetricsExporter) createGaugeRecord(resAttr pcommon.Map, schemaU
 }
 
 // Utility functions
-func (e *kineticaMetricsExporter) newGaugeResourceAttributeValue(ResourceID, key string, vtPair ValueTypePair) (*GaugeResourceAttribute, error) {
+func (e *kineticaMetricsExporter) newGaugeResourceAttributeValue(GaugeID string, key string, vtPair ValueTypePair) (*GaugeResourceAttribute, error) {
 	var av *AttributeValue
 	var err error
 
@@ -1229,7 +1229,7 @@ func (e *kineticaMetricsExporter) newGaugeResourceAttributeValue(ResourceID, key
 		return nil, err
 	}
 
-	ra := &GaugeResourceAttribute{ResourceID, key, *av}
+	ra := &GaugeResourceAttribute{GaugeID, key, *av}
 	return ra, nil
 }
 
@@ -1246,7 +1246,7 @@ func (e *kineticaMetricsExporter) newGaugeDatapointAttributeValue(GaugeID string
 	return ga, nil
 }
 
-func (e *kineticaMetricsExporter) newGaugeScopeAttributeValue(scopeID string, key string, scopeName string, scopeVersion string, vtPair ValueTypePair) (*GaugeScopeAttribute, error) {
+func (e *kineticaMetricsExporter) newGaugeScopeAttributeValue(gaugeID string, key string, scopeName string, scopeVersion string, vtPair ValueTypePair) (*GaugeScopeAttribute, error) {
 	var av *AttributeValue
 	var err error
 
@@ -1255,7 +1255,7 @@ func (e *kineticaMetricsExporter) newGaugeScopeAttributeValue(scopeID string, ke
 		return nil, err
 	}
 
-	sa := &GaugeScopeAttribute{scopeID, key, scopeName, scopeVersion, *av}
+	sa := &GaugeScopeAttribute{gaugeID, key, scopeName, scopeVersion, *av}
 	return sa, nil
 }
 
@@ -1272,7 +1272,7 @@ func (e *kineticaMetricsExporter) newSumDatapointAttributeValue(SumID string, Da
 	return ga, nil
 }
 
-func (e *kineticaMetricsExporter) newSumResourceAttributeValue(ResourceID, key string, vtPair ValueTypePair) (*SumResourceAttribute, error) {
+func (e *kineticaMetricsExporter) newSumResourceAttributeValue(SumID string, key string, vtPair ValueTypePair) (*SumResourceAttribute, error) {
 	var av *AttributeValue
 	var err error
 
@@ -1281,11 +1281,11 @@ func (e *kineticaMetricsExporter) newSumResourceAttributeValue(ResourceID, key s
 		return nil, err
 	}
 
-	ra := &SumResourceAttribute{ResourceID, key, *av}
+	ra := &SumResourceAttribute{SumID, key, *av}
 	return ra, nil
 }
 
-func (e *kineticaMetricsExporter) newSumScopeAttributeValue(scopeID string, key string, scopeName string, scopeVersion string, vtPair ValueTypePair) (*SumScopeAttribute, error) {
+func (e *kineticaMetricsExporter) newSumScopeAttributeValue(sumID string, key string, scopeName string, scopeVersion string, vtPair ValueTypePair) (*SumScopeAttribute, error) {
 	var av *AttributeValue
 	var err error
 
@@ -1294,7 +1294,7 @@ func (e *kineticaMetricsExporter) newSumScopeAttributeValue(scopeID string, key 
 		return nil, err
 	}
 
-	sa := &SumScopeAttribute{scopeID, key, scopeName, scopeVersion, *av}
+	sa := &SumScopeAttribute{sumID, key, scopeName, scopeVersion, *av}
 	return sa, nil
 }
 
