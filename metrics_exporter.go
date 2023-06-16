@@ -77,9 +77,10 @@ func newMetricsExporter(logger *zap.Logger, cfg *Config) (*kineticaMetricsExport
 		return nil, err
 	}
 
-	writer := NewKiWriter(context.TODO(), *cfg, logger)
+	kineticaLogger := cfg.createLogger()
+	writer := NewKiWriter(context.TODO(), *cfg, kineticaLogger)
 	metricsExp := &kineticaMetricsExporter{
-		logger: logger,
+		logger: kineticaLogger,
 		writer: writer,
 	}
 	return metricsExp, nil
@@ -95,20 +96,20 @@ func (e *kineticaMetricsExporter) pushMetricsData(ctx context.Context, md pmetri
 	var exponentialHistogramRecords []kineticaExponentialHistogramRecord
 	var summaryRecords []kineticaSummaryRecord
 
-	e.logger.Info("Resource metrics ", zap.Int("count = ", md.ResourceMetrics().Len()))
+	e.logger.Debug("Resource metrics ", zap.Int("count = ", md.ResourceMetrics().Len()))
 
 	for i := 0; i < md.ResourceMetrics().Len(); i++ {
 		metrics := md.ResourceMetrics().At(i)
 		resAttr := metrics.Resource().Attributes()
 
-		e.logger.Info("Scope metrics ", zap.Int("count = ", metrics.ScopeMetrics().Len()))
+		e.logger.Debug("Scope metrics ", zap.Int("count = ", metrics.ScopeMetrics().Len()))
 
 		for j := 0; j < metrics.ScopeMetrics().Len(); j++ {
 			metricSlice := metrics.ScopeMetrics().At(j).Metrics()
 			scopeInstr := metrics.ScopeMetrics().At(j).Scope()
 			scopeURL := metrics.ScopeMetrics().At(j).SchemaUrl()
 
-			e.logger.Info("metrics ", zap.Int("count = ", metricSlice.Len()))
+			e.logger.Debug("metrics ", zap.Int("count = ", metricSlice.Len()))
 
 			for k := 0; k < metricSlice.Len(); k++ {
 
@@ -119,7 +120,7 @@ func (e *kineticaMetricsExporter) pushMetricsData(ctx context.Context, md pmetri
 					gaugeRecord, err := e.createGaugeRecord(resAttr, metrics.SchemaUrl(), scopeInstr, scopeURL, metric.Gauge(), metric.Name(), metric.Description(), metric.Unit())
 					if err == nil {
 						gaugeRecords = append(gaugeRecords, *gaugeRecord)
-						e.logger.Info("Added gauge")
+						e.logger.Debug("Added gauge")
 					} else {
 						e.logger.Error(err.Error())
 						errs = append(errs, err)
@@ -128,7 +129,7 @@ func (e *kineticaMetricsExporter) pushMetricsData(ctx context.Context, md pmetri
 					sumRecord, err := e.createSumRecord(resAttr, metrics.SchemaUrl(), scopeInstr, scopeURL, metric.Sum(), metric.Name(), metric.Description(), metric.Unit())
 					if err == nil {
 						sumRecords = append(sumRecords, *sumRecord)
-						e.logger.Info("Added sum")
+						e.logger.Debug("Added sum")
 					} else {
 						e.logger.Error(err.Error())
 						errs = append(errs, err)
@@ -137,7 +138,7 @@ func (e *kineticaMetricsExporter) pushMetricsData(ctx context.Context, md pmetri
 					histogramRecord, err := e.createHistogramRecord(resAttr, metrics.SchemaUrl(), scopeInstr, scopeURL, metric.Histogram(), metric.Name(), metric.Description(), metric.Unit())
 					if err == nil {
 						histogramRecords = append(histogramRecords, *histogramRecord)
-						e.logger.Info("Added histogram")
+						e.logger.Debug("Added histogram")
 					} else {
 						e.logger.Error(err.Error())
 						errs = append(errs, err)
@@ -146,7 +147,7 @@ func (e *kineticaMetricsExporter) pushMetricsData(ctx context.Context, md pmetri
 					exponentialHistogramRecord, err := e.createExponentialHistogramRecord(resAttr, metrics.SchemaUrl(), scopeInstr, scopeURL, metric.ExponentialHistogram(), metric.Name(), metric.Description(), metric.Unit())
 					if err == nil {
 						exponentialHistogramRecords = append(exponentialHistogramRecords, *exponentialHistogramRecord)
-						e.logger.Info("Added exp histogram")
+						e.logger.Debug("Added exp histogram")
 					} else {
 						e.logger.Error(err.Error())
 						errs = append(errs, err)
@@ -155,7 +156,7 @@ func (e *kineticaMetricsExporter) pushMetricsData(ctx context.Context, md pmetri
 					summaryRecord, err := e.createSummaryRecord(resAttr, metrics.SchemaUrl(), scopeInstr, scopeURL, metric.Summary(), metric.Name(), metric.Description(), metric.Unit())
 					if err == nil {
 						summaryRecords = append(summaryRecords, *summaryRecord)
-						e.logger.Info("Added summary")
+						e.logger.Debug("Added summary")
 					} else {
 						e.logger.Error(err.Error())
 						errs = append(errs, err)
@@ -164,11 +165,11 @@ func (e *kineticaMetricsExporter) pushMetricsData(ctx context.Context, md pmetri
 					return fmt.Errorf("unsupported metrics type")
 				}
 
-				e.logger.Info("Gague ", zap.Int("count = ", len(gaugeRecords)))
-				e.logger.Info("Sum ", zap.Int("count = ", len(sumRecords)))
-				e.logger.Info("Histogram ", zap.Int("count = ", len(histogramRecords)))
-				e.logger.Info("Exp Histogram ", zap.Int("count = ", len(exponentialHistogramRecords)))
-				e.logger.Info("Summary ", zap.Int("count = ", len(summaryRecords)))
+				e.logger.Debug("Gague ", zap.Int("count = ", len(gaugeRecords)))
+				e.logger.Debug("Sum ", zap.Int("count = ", len(sumRecords)))
+				e.logger.Debug("Histogram ", zap.Int("count = ", len(histogramRecords)))
+				e.logger.Debug("Exp Histogram ", zap.Int("count = ", len(exponentialHistogramRecords)))
+				e.logger.Debug("Summary ", zap.Int("count = ", len(summaryRecords)))
 
 				if errs != nil && len(errs) > 0 {
 					e.logger.Error(multierr.Combine(errs...).Error())
@@ -178,7 +179,7 @@ func (e *kineticaMetricsExporter) pushMetricsData(ctx context.Context, md pmetri
 		}
 	}
 
-	e.logger.Info("Before writing metrics into Kinetica")
+	e.logger.Debug("Before writing metrics into Kinetica")
 
 	switch metricType {
 	case pmetric.MetricTypeGauge:
@@ -596,7 +597,7 @@ func (e *kineticaMetricsExporter) createExponentialHistogramRecord(resAttr pcomm
 //	@return error
 func (e *kineticaMetricsExporter) createHistogramRecord(resAttr pcommon.Map, schemaURL string, scopeInstr pcommon.InstrumentationScope, scopeURL string, histogramRecord pmetric.Histogram, name, description, unit string) (*kineticaHistogramRecord, error) {
 
-	e.logger.Info("In createHistogramRecord ...")
+	e.logger.Debug("In createHistogramRecord ...")
 
 	var errs []error
 
@@ -1130,7 +1131,7 @@ func (e *kineticaMetricsExporter) createGaugeRecord(resAttr pcommon.Map, schemaU
 	}
 
 	// Handle Resource attribute
-	e.logger.Info("Resource Attributes received ->", zap.Any("Attributes", resAttr))
+	e.logger.Debug("Resource Attributes received ->", zap.Any("Attributes", resAttr))
 
 	var resourceAttribute []GaugeResourceAttribute
 	resourceAttributes := make(map[string]ValueTypePair)
@@ -1148,12 +1149,12 @@ func (e *kineticaMetricsExporter) createGaugeRecord(resAttr pcommon.Map, schemaU
 			return true
 		})
 
-		e.logger.Info("Resource Attributes to be added ->", zap.Any("Attributes", resourceAttributes))
+		e.logger.Debug("Resource Attributes to be added ->", zap.Any("Attributes", resourceAttributes))
 		for key := range resourceAttributes {
 			vtPair := resourceAttributes[key]
 			ga, err := e.newGaugeResourceAttributeValue(gauge.GaugeID, key, vtPair)
 
-			e.logger.Info("New resource attribute ->", zap.Any("Attribute", ga))
+			e.logger.Debug("New resource attribute ->", zap.Any("Attribute", ga))
 
 			if err != nil {
 				e.logger.Error(err.Error())
@@ -1164,11 +1165,11 @@ func (e *kineticaMetricsExporter) createGaugeRecord(resAttr pcommon.Map, schemaU
 
 		kiGaugeRecord.resourceAttribute = make([]GaugeResourceAttribute, len(resourceAttribute))
 		copy(kiGaugeRecord.resourceAttribute, resourceAttribute)
-		e.logger.Info("Resource Attributes actually added ->", zap.Any("Attributes", kiGaugeRecord.resourceAttribute))
+		e.logger.Debug("Resource Attributes actually added ->", zap.Any("Attributes", kiGaugeRecord.resourceAttribute))
 	}
 
 	// Handle Scope attribute
-	e.logger.Info("Scope Attributes received ->", zap.Any("Attributes", scopeInstr.Attributes()))
+	e.logger.Debug("Scope Attributes received ->", zap.Any("Attributes", scopeInstr.Attributes()))
 
 	var scopeAttribute []GaugeScopeAttribute
 	scopeAttributes := make(map[string]ValueTypePair)
@@ -1188,12 +1189,12 @@ func (e *kineticaMetricsExporter) createGaugeRecord(resAttr pcommon.Map, schemaU
 			return true
 		})
 
-		e.logger.Info("Scope Attributes to be added ->", zap.Any("Attributes", scopeAttributes))
+		e.logger.Debug("Scope Attributes to be added ->", zap.Any("Attributes", scopeAttributes))
 		for key := range scopeAttributes {
 			vtPair := scopeAttributes[key]
 			ga, err := e.newGaugeScopeAttributeValue(gauge.GaugeID, key, scopeName, scopeVersion, vtPair)
 
-			e.logger.Info("New scope attribute ->", zap.Any("Attribute", ga))
+			e.logger.Debug("New scope attribute ->", zap.Any("Attribute", ga))
 
 			if err != nil {
 				e.logger.Error(err.Error())
@@ -1204,7 +1205,7 @@ func (e *kineticaMetricsExporter) createGaugeRecord(resAttr pcommon.Map, schemaU
 
 		kiGaugeRecord.scopeAttribute = make([]GaugeScopeAttribute, len(scopeAttribute))
 		copy(kiGaugeRecord.scopeAttribute, scopeAttribute)
-		e.logger.Info("Scope Attributes actually added ->", zap.Any("Attributes", kiGaugeRecord.scopeAttribute))
+		e.logger.Debug("Scope Attributes actually added ->", zap.Any("Attributes", kiGaugeRecord.scopeAttribute))
 	} else {
 		// No attributes found - just basic scope
 		kiGaugeRecord.scopeAttribute = append(kiGaugeRecord.scopeAttribute, GaugeScopeAttribute{
@@ -1220,7 +1221,7 @@ func (e *kineticaMetricsExporter) createGaugeRecord(resAttr pcommon.Map, schemaU
 }
 
 // Utility functions
-func (e *kineticaMetricsExporter) newGaugeResourceAttributeValue(ResourceID, key string, vtPair ValueTypePair) (*GaugeResourceAttribute, error) {
+func (e *kineticaMetricsExporter) newGaugeResourceAttributeValue(GaugeID string, key string, vtPair ValueTypePair) (*GaugeResourceAttribute, error) {
 	var av *AttributeValue
 	var err error
 
@@ -1229,7 +1230,7 @@ func (e *kineticaMetricsExporter) newGaugeResourceAttributeValue(ResourceID, key
 		return nil, err
 	}
 
-	ra := &GaugeResourceAttribute{ResourceID, key, *av}
+	ra := &GaugeResourceAttribute{GaugeID, key, *av}
 	return ra, nil
 }
 
@@ -1246,7 +1247,7 @@ func (e *kineticaMetricsExporter) newGaugeDatapointAttributeValue(GaugeID string
 	return ga, nil
 }
 
-func (e *kineticaMetricsExporter) newGaugeScopeAttributeValue(scopeID string, key string, scopeName string, scopeVersion string, vtPair ValueTypePair) (*GaugeScopeAttribute, error) {
+func (e *kineticaMetricsExporter) newGaugeScopeAttributeValue(gaugeID string, key string, scopeName string, scopeVersion string, vtPair ValueTypePair) (*GaugeScopeAttribute, error) {
 	var av *AttributeValue
 	var err error
 
@@ -1255,7 +1256,7 @@ func (e *kineticaMetricsExporter) newGaugeScopeAttributeValue(scopeID string, ke
 		return nil, err
 	}
 
-	sa := &GaugeScopeAttribute{scopeID, key, scopeName, scopeVersion, *av}
+	sa := &GaugeScopeAttribute{gaugeID, key, scopeName, scopeVersion, *av}
 	return sa, nil
 }
 
@@ -1272,7 +1273,7 @@ func (e *kineticaMetricsExporter) newSumDatapointAttributeValue(SumID string, Da
 	return ga, nil
 }
 
-func (e *kineticaMetricsExporter) newSumResourceAttributeValue(ResourceID, key string, vtPair ValueTypePair) (*SumResourceAttribute, error) {
+func (e *kineticaMetricsExporter) newSumResourceAttributeValue(SumID string, key string, vtPair ValueTypePair) (*SumResourceAttribute, error) {
 	var av *AttributeValue
 	var err error
 
@@ -1281,11 +1282,11 @@ func (e *kineticaMetricsExporter) newSumResourceAttributeValue(ResourceID, key s
 		return nil, err
 	}
 
-	ra := &SumResourceAttribute{ResourceID, key, *av}
+	ra := &SumResourceAttribute{SumID, key, *av}
 	return ra, nil
 }
 
-func (e *kineticaMetricsExporter) newSumScopeAttributeValue(scopeID string, key string, scopeName string, scopeVersion string, vtPair ValueTypePair) (*SumScopeAttribute, error) {
+func (e *kineticaMetricsExporter) newSumScopeAttributeValue(sumID string, key string, scopeName string, scopeVersion string, vtPair ValueTypePair) (*SumScopeAttribute, error) {
 	var av *AttributeValue
 	var err error
 
@@ -1294,7 +1295,7 @@ func (e *kineticaMetricsExporter) newSumScopeAttributeValue(scopeID string, key 
 		return nil, err
 	}
 
-	sa := &SumScopeAttribute{scopeID, key, scopeName, scopeVersion, *av}
+	sa := &SumScopeAttribute{sumID, key, scopeName, scopeVersion, *av}
 	return sa, nil
 }
 
