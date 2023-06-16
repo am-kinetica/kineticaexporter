@@ -73,8 +73,12 @@ func (cfg *Config) createLogger() *zap.Logger {
 
 	yamlFile, _ := os.ReadFile("./config_log_zap.yaml")
 	if err := yaml.Unmarshal(yamlFile, &logConfig); err != nil {
-		return cfg.createDefaultLogger()
+		fmt.Println("Error in loading log config file ...")
+		fmt.Println(err)
+		kineticaLogger = cfg.createDefaultLogger()
+		return kineticaLogger
 	}
+	fmt.Println("Log Config from Yaml file : ", logConfig)
 
 	var (
 		stdout      zapcore.WriteSyncer
@@ -86,12 +90,17 @@ func (cfg *Config) createLogger() *zap.Logger {
 
 		if path == "stdout" || path == "stderror" {
 			stdout = zapcore.AddSync(os.Stdout)
+			fmt.Println("Created stdout syncer ...")
 
 		} else if strings.HasPrefix(path, "lumberjack://") {
 			var err error
 			logFilePath, err = url.Parse(path)
+			fmt.Println("LogFilePath : ", logFilePath)
+
 			if err == nil {
 				filename := strings.TrimLeft(logFilePath.Path, "/")
+				fmt.Println("LogFileName : ", filename)
+
 				if filename != "" {
 					q := logFilePath.Query()
 					l := &lumberjack.Logger{
@@ -104,6 +113,7 @@ func (cfg *Config) createLogger() *zap.Logger {
 					}
 
 					file = zapcore.AddSync(l)
+					fmt.Println("Created file syncer ...")
 				}
 			}
 		} else {
@@ -113,6 +123,7 @@ func (cfg *Config) createLogger() *zap.Logger {
 	}
 
 	if stdout == nil && file == nil {
+		fmt.Println("Both stdout and file not available; creating default logger ...")
 		return cfg.createDefaultLogger()
 	}
 
@@ -126,7 +137,8 @@ func (cfg *Config) createLogger() *zap.Logger {
 		zapcore.NewCore(fileEncoder, file, level),
 	)
 
-	return zap.New(core)
+	kineticaLogger = zap.New(core)
+	return kineticaLogger
 }
 
 // createDefaultLogger

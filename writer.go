@@ -1289,7 +1289,7 @@ type SummaryDatapoint struct {
 	StartTimeUnix int64   `avro:"start_time_unix"`
 	TimeUnix      int64   `avro:"time_unix"`
 	Count         int64   `avro:"count"`
-	Sum           float64 `avro:"sum"`
+	Sum           float64 `avro:"data_sum"`
 	Flags         int     `avro:"flags"`
 }
 
