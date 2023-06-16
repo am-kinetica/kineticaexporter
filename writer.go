@@ -1454,7 +1454,7 @@ func (kiwriter *KiWriter) persistTraceRecord(traceRecords []kineticaTraceRecord)
 //	@return error
 func (kiwriter *KiWriter) writeMetric(metricType string, tableDataMap *orderedmap.OrderedMap) error {
 
-	kiwriter.logger.Info("Writing metric", zap.String("Type", metricType))
+	kiwriter.logger.Debug("Writing metric", zap.String("Type", metricType))
 
 	var errs []error
 	errsChan := make(chan error, tableDataMap.Len())
@@ -1488,7 +1488,7 @@ func (kiwriter *KiWriter) writeMetric(metricType string, tableDataMap *orderedma
 }
 
 func (kiwriter *KiWriter) persistGaugeRecord(gaugeRecords []kineticaGaugeRecord) error {
-	kiwriter.logger.Info("In persistGaugeRecord ...")
+	kiwriter.logger.Debug("In persistGaugeRecord ...")
 
 	var errs []error
 	var gauges []any
@@ -1545,7 +1545,7 @@ func (kiwriter *KiWriter) persistGaugeRecord(gaugeRecords []kineticaGaugeRecord)
 }
 
 func (kiwriter *KiWriter) persistSumRecord(sumRecords []kineticaSumRecord) error {
-	kiwriter.logger.Info("In persistSumRecord ...")
+	kiwriter.logger.Debug("In persistSumRecord ...")
 
 	var errs []error
 
@@ -1603,7 +1603,7 @@ func (kiwriter *KiWriter) persistSumRecord(sumRecords []kineticaSumRecord) error
 }
 
 func (kiwriter *KiWriter) persistHistogramRecord(histogramRecords []kineticaHistogramRecord) error {
-	kiwriter.logger.Info("In persistHistogramRecord ...")
+	kiwriter.logger.Debug("In persistHistogramRecord ...")
 
 	var errs []error
 
@@ -1672,7 +1672,7 @@ func (kiwriter *KiWriter) persistHistogramRecord(histogramRecords []kineticaHist
 }
 
 func (kiwriter *KiWriter) persistExponentialHistogramRecord(exponentialHistogramRecords []kineticaExponentialHistogramRecord) error {
-	kiwriter.logger.Info("In persistExponentialHistogramRecord ...")
+	kiwriter.logger.Debug("In persistExponentialHistogramRecord ...")
 
 	var errs []error
 
@@ -1741,7 +1741,7 @@ func (kiwriter *KiWriter) persistExponentialHistogramRecord(exponentialHistogram
 }
 
 func (kiwriter *KiWriter) persistSummaryRecord(summaryRecords []kineticaSummaryRecord) error {
-	kiwriter.logger.Info("In persistSummaryRecord ...")
+	kiwriter.logger.Debug("In persistSummaryRecord ...")
 
 	var errs []error
 
@@ -1810,7 +1810,7 @@ func (kiwriter *KiWriter) persistSummaryRecord(summaryRecords []kineticaSummaryR
 // 		finalTable = tableName
 // 	}
 
-// 	kiwriter.logger.Info("Writing to - ", zap.String("Table", finalTable), zap.Int("Recoord count", len(records)))
+// 	kiwriter.logger.Debug("Writing to - ", zap.String("Table", finalTable), zap.Int("Recoord count", len(records)))
 
 // 	recordChunks := ChunkBySize(records, ChunkSize)
 
@@ -1831,7 +1831,7 @@ func (kiwriter *KiWriter) doChunkedInsert(ctx context.Context, tableName string,
 		finalTable = tableName
 	}
 
-	kiwriter.logger.Info("Writing to - ", zap.String("Table", finalTable), zap.Int("Record count", len(records)))
+	kiwriter.logger.Debug("Writing to - ", zap.String("Table", finalTable), zap.Int("Record count", len(records)))
 
 	recordChunks := ChunkBySize(records, ChunkSize)
 

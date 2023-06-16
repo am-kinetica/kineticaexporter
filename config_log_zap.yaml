@@ -1,0 +1,29 @@
+level: 'info'
+development: true
+disableCaller: false
+disableStacktrace: false
+encoding: 'console'
+encoderConfig:
+  messageKey: 'msg'
+  levelKey: 'level'
+  timeKey: 'ts'
+  nameKey: 'logger'
+  callerKey: 'caller'
+  functionKey: 'function'
+  stacktraceKey: 'stacktrace'
+  skipLineEnding: false
+  lineEnding: "\n"
+  levelEncoder: 'capital'
+  timeEncoder: 'iso8601'
+  durationEncoder: 'string'
+  callerEncoder: 'full'
+  nameEncoder: 'full'
+  consoleSeparator: ' | '
+outputPaths:
+  - 'stdout'
+  - 'lumberjack://localhost/logs/kinetica-exporter.log?maxSize=500&maxBackups=3&maxAge=28'
+errorOutputPaths:
+  - 'stderr'
+  - './logs/error_logs'
+initialFields:
+  app: 'kinetica-exporter'
