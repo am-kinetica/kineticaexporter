@@ -20,8 +20,14 @@ encoderConfig:
   nameEncoder: 'full'
   consoleSeparator: ' | '
 outputPaths:
+  # Implements logging to the console
   - 'stdout'
-  - 'lumberjack://localhost/logs/kinetica-exporter.log?maxSize=500&maxBackups=3&maxAge=28'
+  # Implements rolling logs using lumberjack logger; config parameters are supplied as
+  # query params. Here maxSize is 10MB after which the logger rolls over; maximum
+  # number of backups (maxBackups) kept is 5 and maxAge is 10 days.
+  # The name of the log file in this case is "logs/kinetica-exporter.log" where the
+  # "logs" directory is under the current directory on the local machine.
+  - 'lumberjack://localhost/logs/kinetica-exporter.log?maxSize=10&maxBackups=5&maxAge=10'
 errorOutputPaths:
   - 'stderr'
   - './logs/error_logs'

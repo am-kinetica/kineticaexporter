@@ -21,13 +21,15 @@ const (
 	// The stability level of the exporter.
 	stability = component.StabilityLevelAlpha
 
-	maxSize    = 10
-	maxBackups = 5
-	maxAge     = 10
+	maxSize              = 10
+	maxBackups           = 5
+	maxAge               = 10
+	defaultLogConfigFile = "config_log_zap.yaml"
 )
 
 var (
-	kineticaLogger *zap.Logger
+	kineticaLogger      *zap.Logger
+	logConfigFileExists bool
 )
 
 // Config defines configuration for the Kinetica exporter.
@@ -37,6 +39,7 @@ type Config struct {
 	Username           string `mapstructure:"username"`
 	Password           string `mapstructure:"password"`
 	BypassSslCertCheck bool   `mapstructure:"bypasssslcertcheck"`
+	LogConfigFile      string `mapstructure:"logconfigfile"`
 }
 
 // Validate the config
@@ -52,6 +55,13 @@ func (cfg *Config) Validate() error {
 		return errors.New("Protocol must be either `http` or `https`")
 	}
 
+	if !fileExists(cfg.LogConfigFile) {
+		fmt.Println("WARNING : LOG config file ", cfg.LogConfigFile, " does not exist; will work with default logger ...")
+		logConfigFileExists = false
+	} else {
+		logConfigFileExists = true
+	}
+
 	return nil
 }
 
@@ -63,6 +73,10 @@ func parseNumber(s string, fallback int) int {
 	return fallback
 }
 
+// createLogger
+//
+//	@receiver cfg
+//	@return *zap.Logger
 func (cfg *Config) createLogger() *zap.Logger {
 
 	if kineticaLogger != nil {
@@ -71,10 +85,11 @@ func (cfg *Config) createLogger() *zap.Logger {
 
 	var logConfig zap.Config
 
-	yamlFile, _ := os.ReadFile("./config_log_zap.yaml")
+	yamlFile, _ := os.ReadFile(cfg.LogConfigFile)
 	if err := yaml.Unmarshal(yamlFile, &logConfig); err != nil {
-		fmt.Println("Error in loading log config file ...")
+		fmt.Println("Error in loading log config file : ", cfg.LogConfigFile)
 		fmt.Println(err)
+		fmt.Println("Creating default logger ...")
 		kineticaLogger = cfg.createDefaultLogger()
 		return kineticaLogger
 	}
@@ -146,41 +161,89 @@ func (cfg *Config) createLogger() *zap.Logger {
 //	@receiver cfg
 //	@return *zap.Logger
 func (cfg *Config) createDefaultLogger() *zap.Logger {
-	stdout := zapcore.AddSync(os.Stdout)
+	if kineticaLogger != nil {
+		return kineticaLogger
+	}
 
-	file := zapcore.AddSync(&lumberjack.Logger{
-		Filename:   "./logs/kinetica-exporter.log",
-		MaxSize:    maxSize, // megabytes
-		MaxBackups: maxBackups,
-		MaxAge:     maxAge, // days
-	})
+	var logConfig zap.Config
 
-	level := zap.NewAtomicLevelAt(zap.InfoLevel)
+	yamlFile, _ := os.ReadFile(defaultLogConfigFile)
+	if err := yaml.Unmarshal(yamlFile, &logConfig); err != nil {
+		fmt.Println("Error in loading log config file : ", cfg.LogConfigFile)
+		fmt.Println(err)
+		fmt.Println("Creating default logger ...")
+		kineticaLogger = cfg.createDefaultLogger()
+		return kineticaLogger
+	}
+	fmt.Println("Default Log Config from Yaml file : ", logConfig)
 
-	productionCfg := zap.NewProductionEncoderConfig()
-	productionCfg.NameKey = "logger"
-	productionCfg.TimeKey = "ts"
-	productionCfg.MessageKey = "msg"
-	productionCfg.StacktraceKey = "stacktrace"
-	productionCfg.EncodeTime = zapcore.ISO8601TimeEncoder
+	var (
+		stdout      zapcore.WriteSyncer
+		file        zapcore.WriteSyncer
+		logFilePath *url.URL
+	)
 
-	developmentCfg := zap.NewDevelopmentEncoderConfig()
-	developmentCfg.NameKey = "logger"
-	developmentCfg.TimeKey = "ts"
-	developmentCfg.MessageKey = "msg"
-	developmentCfg.StacktraceKey = "stacktrace"
-	developmentCfg.EncodeTime = zapcore.ISO8601TimeEncoder
-	developmentCfg.EncodeLevel = zapcore.CapitalColorLevelEncoder
+	for _, path := range logConfig.OutputPaths {
 
-	consoleEncoder := zapcore.NewConsoleEncoder(developmentCfg)
-	fileEncoder := zapcore.NewJSONEncoder(productionCfg)
+		if path == "stdout" || path == "stderror" {
+			stdout = zapcore.AddSync(os.Stdout)
+			fmt.Println("Created stdout syncer ...")
+
+		} else if strings.HasPrefix(path, "lumberjack://") {
+			var err error
+			logFilePath, err = url.Parse(path)
+			fmt.Println("LogFilePath : ", logFilePath)
+
+			if err == nil {
+				filename := strings.TrimLeft(logFilePath.Path, "/")
+				fmt.Println("LogFileName : ", filename)
+
+				if filename != "" {
+					q := logFilePath.Query()
+					l := &lumberjack.Logger{
+						Filename:   filename,
+						MaxSize:    parseNumber(q.Get("maxSize"), maxSize),
+						MaxAge:     parseNumber(q.Get("maxAge"), maxAge),
+						MaxBackups: parseNumber(q.Get("maxBackups"), maxBackups),
+						LocalTime:  false,
+						Compress:   false,
+					}
+
+					file = zapcore.AddSync(l)
+					fmt.Println("Created file syncer ...")
+				}
+			}
+		} else {
+			// Unknown output format
+			fmt.Println("Invalid output path specified in config ...")
+		}
+	}
+
+	if stdout == nil && file == nil {
+		fmt.Println("Both stdout and file not available; creating default logger ...")
+		return cfg.createDefaultLogger()
+	}
+
+	level := zap.NewAtomicLevelAt(logConfig.Level.Level())
+
+	consoleEncoder := zapcore.NewConsoleEncoder(logConfig.EncoderConfig)
+	fileEncoder := zapcore.NewJSONEncoder(logConfig.EncoderConfig)
 
 	core := zapcore.NewTee(
 		zapcore.NewCore(consoleEncoder, stdout, level),
 		zapcore.NewCore(fileEncoder, file, level),
 	)
 
-	return zap.New(core)
+	kineticaLogger = zap.New(core)
+	return kineticaLogger
+}
+
+func fileExists(filename string) bool {
+	info, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return !info.IsDir()
 }
 
 var _ component.Config = (*Config)(nil)
