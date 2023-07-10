@@ -334,7 +334,7 @@ func getAttributeValue(vtPair ValueTypePair) (*AttributeValue, error) {
 
 }
 
-// ValidateStruct
+// ValidateStruct - a helper method to validate whether a struct has been initialized or not
 //
 //	@param s
 //	@return err

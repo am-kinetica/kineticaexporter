@@ -62,7 +62,7 @@ func createLogsExporter(
 	)
 }
 
-// createTracesExporter
+// createTracesExporter - creates a new exporter for traces
 //
 //	@param ctx
 //	@param set
@@ -86,6 +86,13 @@ func createTracesExporter(ctx context.Context,
 	)
 }
 
+// createMetricsExporter - creates a new exporter for metrics
+//
+//	@param ctx
+//	@param set
+//	@param cfg
+//	@return exporter.Metrics
+//	@return error
 func createMetricsExporter(ctx context.Context,
 	set exporter.CreateSettings,
 	cfg component.Config) (exporter.Metrics, error) {

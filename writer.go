@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/am-kinetica/gpudb-api-go/gpudb"
+	"github.com/am-kinetica/gpudb-api-go/kinetica"
 	"github.com/google/uuid"
 	orderedmap "github.com/wk8/go-ordered-map"
 	"go.opentelemetry.io/collector/pdata/pmetric"
@@ -13,7 +13,8 @@ import (
 	"go.uber.org/zap"
 )
 
-// AttributeValue
+// AttributeValue - struct to contain attribute values of different types
+// Used by other metric structs
 type AttributeValue struct {
 	IntValue    int     `avro:"int_value"`
 	StringValue string  `avro:"string_value"`
@@ -40,7 +41,7 @@ func NewAttributeValue(intValue int, stringValue string, boolValue int8, doubleV
 	return o
 }
 
-// GetIntValue
+// GetIntValue - Getter method
 //
 //	@receiver attributevalue
 //	@return int
@@ -48,7 +49,7 @@ func (attributevalue *AttributeValue) GetIntValue() int {
 	return attributevalue.IntValue
 }
 
-// GetStringValue
+// GetStringValue - Getter method
 //
 //	@receiver attributevalue
 //	@return string
@@ -56,7 +57,7 @@ func (attributevalue *AttributeValue) GetStringValue() string {
 	return attributevalue.StringValue
 }
 
-// GetBoolValue
+// GetBoolValue - Getter method
 //
 //	@receiver attributevalue
 //	@return int8
@@ -64,7 +65,7 @@ func (attributevalue *AttributeValue) GetBoolValue() int8 {
 	return attributevalue.BoolValue
 }
 
-// GetDoubleValue
+// GetDoubleValue - Getter method
 //
 //	@receiver attributevalue
 //	@return float64
@@ -72,7 +73,7 @@ func (attributevalue *AttributeValue) GetDoubleValue() float64 {
 	return attributevalue.DoubleValue
 }
 
-// GetBytesValue
+// GetBytesValue - Getter method
 //
 //	@receiver attributevalue
 //	@return []byte
@@ -80,7 +81,7 @@ func (attributevalue *AttributeValue) GetBytesValue() []byte {
 	return attributevalue.BytesValue
 }
 
-// SetIntValue
+// SetIntValue - Setter method
 //
 //	@receiver attributevalue
 //	@param IntValue
@@ -90,7 +91,7 @@ func (attributevalue *AttributeValue) SetIntValue(IntValue int) *AttributeValue 
 	return attributevalue
 }
 
-// SetStringValue
+// SetStringValue - Setter method
 //
 //	@receiver attributevalue
 //	@param StringValue
@@ -100,7 +101,7 @@ func (attributevalue *AttributeValue) SetStringValue(StringValue string) *Attrib
 	return attributevalue
 }
 
-// SetBoolValue
+// SetBoolValue - Setter method
 //
 //	@receiver attributevalue
 //	@param BoolValue
@@ -110,7 +111,7 @@ func (attributevalue *AttributeValue) SetBoolValue(BoolValue int8) *AttributeVal
 	return attributevalue
 }
 
-// SetDoubleValue
+// SetDoubleValue - Setter method
 //
 //	@receiver attributevalue
 //	@param DoubleValue
@@ -120,7 +121,7 @@ func (attributevalue *AttributeValue) SetDoubleValue(DoubleValue float64) *Attri
 	return attributevalue
 }
 
-// SetBytesValue
+// SetBytesValue - Setter method
 //
 //	@receiver attributevalue
 //	@param BytesValue
@@ -132,7 +133,7 @@ func (attributevalue *AttributeValue) SetBytesValue(BytesValue []byte) *Attribut
 
 // BEGIN Log Handling
 
-// Log
+// Log - struct for the Log data
 type Log struct {
 	LogID                string `mapstructure:"log_id" avro:"log_id"`
 	TraceID              string `mapstructure:"trace_id" avro:"trace_id"`
@@ -175,7 +176,7 @@ func NewLog(LogID string, TraceID string, SpanID string, TimeUnixNano int64, Obs
 	return o
 }
 
-// GetLogID
+// GetLogID - Getter method
 //
 //	@receiver logs
 //	@return uuid.UUID
@@ -183,7 +184,7 @@ func (logs *Log) GetLogID() string {
 	return logs.LogID
 }
 
-// GetTraceID
+// GetTraceID - Getter method
 //
 //	@receiver logs
 //	@return string
@@ -191,7 +192,7 @@ func (logs *Log) GetTraceID() string {
 	return logs.TraceID
 }
 
-// GetSpanID
+// GetSpanID - Getter method
 //
 //	@receiver logs
 //	@return string
@@ -199,7 +200,7 @@ func (logs *Log) GetSpanID() string {
 	return logs.SpanID
 }
 
-// GetTimeUnixNano
+// GetTimeUnixNano - Getter method
 //
 //	@receiver logs
 //	@return uint64
@@ -207,7 +208,7 @@ func (logs *Log) GetTimeUnixNano() int64 {
 	return logs.TimeUnixNano
 }
 
-// GetObservedTimeUnixNano
+// GetObservedTimeUnixNano - Getter method
 //
 //	@receiver logs
 //	@return uint64
@@ -215,7 +216,7 @@ func (logs *Log) GetObservedTimeUnixNano() int64 {
 	return logs.ObservedTimeUnixNano
 }
 
-// GetSeverityID
+// GetSeverityID - Getter method
 //
 //	@receiver logs
 //	@return int8
@@ -223,7 +224,7 @@ func (logs *Log) GetSeverityID() int8 {
 	return logs.SeverityID
 }
 
-// GetSeverityText
+// GetSeverityText - Getter method
 //
 //	@receiver logs
 //	@return string
@@ -231,7 +232,7 @@ func (logs *Log) GetSeverityText() string {
 	return logs.SeverityText
 }
 
-// GetBody
+// GetBody - Getter method
 //
 //	@receiver logs
 //	@return string
@@ -239,7 +240,7 @@ func (logs *Log) GetBody() string {
 	return logs.Body
 }
 
-// GetFlags
+// GetFlags - Getter method
 //
 //	@receiver logs
 //	@return int
@@ -247,7 +248,7 @@ func (logs *Log) GetFlags() int {
 	return logs.Flags
 }
 
-// SetLogID
+// SetLogID - Setter method
 //
 //	@receiver logs
 //	@param LogID
@@ -257,7 +258,7 @@ func (logs *Log) SetLogID(LogID string) *Log {
 	return logs
 }
 
-// SetTraceID
+// SetTraceID - Setter method
 //
 //	@receiver logs
 //	@param TraceID
@@ -267,7 +268,7 @@ func (logs *Log) SetTraceID(TraceID string) *Log {
 	return logs
 }
 
-// SetSpanID
+// SetSpanID - Setter method
 //
 //	@receiver logs
 //	@param SpanID
@@ -277,7 +278,7 @@ func (logs *Log) SetSpanID(SpanID string) *Log {
 	return logs
 }
 
-// SetTimeUnixNano
+// SetTimeUnixNano - Setter method
 //
 //	@receiver logs
 //	@param TimeUnixNano
@@ -287,7 +288,7 @@ func (logs *Log) SetTimeUnixNano(TimeUnixNano int64) *Log {
 	return logs
 }
 
-// SetObservedTimeUnixNano
+// SetObservedTimeUnixNano - Setter method
 //
 //	@receiver logs
 //	@param ObservedTimeUnixNano
@@ -297,7 +298,7 @@ func (logs *Log) SetObservedTimeUnixNano(ObservedTimeUnixNano int64) *Log {
 	return logs
 }
 
-// SetSeverityID
+// SetSeverityID - Setter method
 //
 //	@receiver logs
 //	@param SeverityID
@@ -307,7 +308,7 @@ func (logs *Log) SetSeverityID(SeverityID int8) *Log {
 	return logs
 }
 
-// SetSeverityText
+// SetSeverityText - Setter method
 //
 //	@receiver logs
 //	@param SeverityText
@@ -317,7 +318,7 @@ func (logs *Log) SetSeverityText(SeverityText string) *Log {
 	return logs
 }
 
-// SetBody
+// SetBody - Setter method
 //
 //	@receiver logs
 //	@param Body
@@ -327,7 +328,7 @@ func (logs *Log) SetBody(Body string) *Log {
 	return logs
 }
 
-// SetFlags
+// SetFlags - Setter method
 //
 //	@receiver logs
 //	@param Flags
@@ -337,7 +338,8 @@ func (logs *Log) SetFlags(Flags int) *Log {
 	return logs
 }
 
-// LogAttribute
+// LogAttribute - struct to contain the Log specific attributes
+// contains '[AttributeValue]' struct
 type LogAttribute struct {
 	LogID          string `avro:"log_id"`
 	Key            string `avro:"key"`
@@ -359,7 +361,7 @@ func NewLogAttribute(logID string, key string, attributes AttributeValue) *LogAt
 
 // END LogAttribute
 
-// ResourceAttribute
+// ResourceAttribute - struct containing the Log Resource attributes
 type ResourceAttribute struct {
 	LogID          string `avro:"log_id"`
 	Key            string `avro:"key"`
@@ -382,7 +384,7 @@ func NewResourceAttribute(logID string, key string, attributes AttributeValue) *
 
 // End LogResourceAttribute
 
-// ScopeAttribute
+// ScopeAttribute - struct containing the Log Scope attribute
 type ScopeAttribute struct {
 	LogID          string `avro:"log_id"`
 	ScopeName      string `avro:"scope_name"`
@@ -411,66 +413,38 @@ func NewScopeAttribute(logID string, key string, scopeName string, scopeVersion 
 
 // END LogScopeAttribute
 
-// KiWriter
+// KiWriter - struct modeling the Kinetica connection, contains the
+// Kinetica connection [kinetica.Kinetica], the Kinetica Options [kinetica.KineticaOptions],
+// the config [Config] and the logger [zap.Logger]
 type KiWriter struct {
-	Db      gpudb.Gpudb
-	Options gpudb.GpudbOptions
+	Db      kinetica.Kinetica
+	Options kinetica.KineticaOptions
 	cfg     Config
 	logger  *zap.Logger
 }
 
-// GetDb
+// GetDb - Getter for the Kinetica instance
 //
 //	@receiver kiwriter
 //	@return gpudb.Gpudb
-func (kiwriter *KiWriter) GetDb() gpudb.Gpudb {
+func (kiwriter *KiWriter) GetDb() kinetica.Kinetica {
 	return kiwriter.Db
 }
 
-// GetOptions
+// GetOptions - Getter for the Kinetica options.
 //
 //	@receiver kiwriter
 //	@return gpudb.GpudbOptions
-func (kiwriter *KiWriter) GetOptions() gpudb.GpudbOptions {
+func (kiwriter *KiWriter) GetOptions() kinetica.KineticaOptions {
 	return kiwriter.Options
 }
 
-// GetCfg
+// GetCfg - Getter for the [Config] value
 //
 //	@receiver kiwriter
 //	@return Config
 func (kiwriter *KiWriter) GetCfg() Config {
 	return kiwriter.cfg
-}
-
-// SetDb
-//
-//	@receiver kiwriter
-//	@param Db
-//	@return *kiwriter
-func (kiwriter *KiWriter) SetDb(Db gpudb.Gpudb) *KiWriter {
-	kiwriter.Db = Db
-	return kiwriter
-}
-
-// SetOptions
-//
-//	@receiver kiwriter
-//	@param Options
-//	@return *kiwriter
-func (kiwriter *KiWriter) SetOptions(Options gpudb.GpudbOptions) *KiWriter {
-	kiwriter.Options = Options
-	return kiwriter
-}
-
-// SetCfg
-//
-//	@receiver kiwriter
-//	@param cfg
-//	@return *kiwriter
-func (kiwriter *KiWriter) SetCfg(cfg Config) *KiWriter {
-	kiwriter.cfg = cfg
-	return kiwriter
 }
 
 // Writer - global pointer to kiwriter struct initialized in the init func
@@ -481,31 +455,31 @@ func init() {
 	ctx := context.TODO()
 	cfg := CreateDefaultConfig()
 	config := cfg.(*Config)
-	options := gpudb.GpudbOptions{Username: config.Username, Password: config.Password, ByPassSslCertCheck: config.BypassSslCertCheck}
-	gpudbInst := gpudb.NewWithOptions(ctx, config.Host, &options)
+	options := kinetica.KineticaOptions{Username: config.Username, Password: config.Password, ByPassSslCertCheck: config.BypassSslCertCheck}
+	gpudbInst := kinetica.NewWithOptions(ctx, config.Host, &options)
 	Writer = &KiWriter{*gpudbInst, options, *config, nil}
 }
 
-// NewKiWriter
+// NewKiWriter - Constructor for the [KiWriter] struct
 //
 //	@param ctx
 //	@param cfg
 //	@return *KiWriter
 func NewKiWriter(ctx context.Context, cfg Config, logger *zap.Logger) *KiWriter {
-	options := gpudb.GpudbOptions{Username: cfg.Username, Password: cfg.Password, ByPassSslCertCheck: cfg.BypassSslCertCheck}
-	gpudbInst := gpudb.NewWithOptions(ctx, cfg.Host, &options)
+	options := kinetica.KineticaOptions{Username: cfg.Username, Password: cfg.Password, ByPassSslCertCheck: cfg.BypassSslCertCheck}
+	gpudbInst := kinetica.NewWithOptions(ctx, cfg.Host, &options)
 	return &KiWriter{*gpudbInst, options, cfg, logger}
 }
 
-// GetGpuDbInst
+// GetGpuDbInst - Creates and returns a new [kinetica.Kinetica] struct
 //
 //	@param cfg
 //	@return *gpudb.Gpudb
-func GetGpuDbInst(cfg *Config) *gpudb.Gpudb {
+func GetGpuDbInst(cfg *Config) *kinetica.Kinetica {
 	ctx := context.TODO()
-	options := gpudb.GpudbOptions{Username: cfg.Username, Password: cfg.Password, ByPassSslCertCheck: cfg.BypassSslCertCheck}
+	options := kinetica.KineticaOptions{Username: cfg.Username, Password: cfg.Password, ByPassSslCertCheck: cfg.BypassSslCertCheck}
 	// fmt.Println("Options", options)
-	gpudbInst := gpudb.NewWithOptions(ctx, cfg.Host, &options)
+	gpudbInst := kinetica.NewWithOptions(ctx, cfg.Host, &options)
 
 	return gpudbInst
 
@@ -515,7 +489,7 @@ func GetGpuDbInst(cfg *Config) *gpudb.Gpudb {
 
 // BEGIN Trace Handling
 
-// Span
+// Span - struct modeling the Span record
 type Span struct {
 	ID                     string `mapstructure:"id" avro:"id" `
 	TraceID                string `mapstructure:"trace_id" avro:"trace_id"`
@@ -572,7 +546,7 @@ func NewSpan(traceID string, spanID string, parentSpanID string, traceState stri
 	return o
 }
 
-// GetID
+// GetID - Getter method
 //
 //	@receiver span
 //	@return uuid.UUID
@@ -580,7 +554,7 @@ func (span *Span) GetID() string {
 	return span.ID
 }
 
-// GetTraceID
+// GetTraceID - Getter method
 //
 //	@receiver span
 //	@return string
@@ -588,7 +562,7 @@ func (span *Span) GetTraceID() string {
 	return span.TraceID
 }
 
-// GetSpanID
+// GetSpanID - Getter method
 //
 //	@receiver span
 //	@return string
@@ -596,7 +570,7 @@ func (span *Span) GetSpanID() string {
 	return span.SpanID
 }
 
-// GetParentSpanID
+// GetParentSpanID - Getter method
 //
 //	@receiver span
 //	@return string
@@ -604,7 +578,7 @@ func (span *Span) GetParentSpanID() string {
 	return span.ParentSpanID
 }
 
-// GetTraceState
+// GetTraceState - Getter method
 //
 //	@receiver span
 //	@return string
@@ -612,7 +586,7 @@ func (span *Span) GetTraceState() string {
 	return span.TraceState
 }
 
-// GetName
+// GetName - Getter method
 //
 //	@receiver span
 //	@return string
@@ -620,7 +594,7 @@ func (span *Span) GetName() string {
 	return span.Name
 }
 
-// GetSpanKind
+// GetSpanKind - Getter method
 //
 //	@receiver span
 //	@return int8
@@ -628,7 +602,7 @@ func (span *Span) GetSpanKind() int8 {
 	return span.SpanKind
 }
 
-// GetStartTimeUnixNano
+// GetStartTimeUnixNano - Getter method
 //
 //	@receiver span
 //	@return uint64
@@ -636,7 +610,7 @@ func (span *Span) GetStartTimeUnixNano() int64 {
 	return span.StartTimeUnixNano
 }
 
-// GetEndTimeUnixNano
+// GetEndTimeUnixNano - Getter method
 //
 //	@receiver span
 //	@return uint64
@@ -644,7 +618,7 @@ func (span *Span) GetEndTimeUnixNano() int64 {
 	return span.EndTimeUnixNano
 }
 
-// GetDroppedAttributeCount
+// GetDroppedAttributeCount - Getter method
 //
 //	@receiver span
 //	@return int
@@ -652,7 +626,7 @@ func (span *Span) GetDroppedAttributeCount() int {
 	return span.DroppedAttributesCount
 }
 
-// GetDroppedEventCount
+// GetDroppedEventCount - Getter method
 //
 //	@receiver span
 //	@return int
@@ -660,7 +634,7 @@ func (span *Span) GetDroppedEventCount() int {
 	return span.DroppedEventsCount
 }
 
-// GetDroppedLinkCount
+// GetDroppedLinkCount - Getter method
 //
 //	@receiver span
 //	@return int
@@ -668,7 +642,7 @@ func (span *Span) GetDroppedLinkCount() int {
 	return span.DroppedLinksCount
 }
 
-// GetMessage
+// GetMessage - Getter method
 //
 //	@receiver span
 //	@return string
@@ -676,7 +650,7 @@ func (span *Span) GetMessage() string {
 	return span.Message
 }
 
-// GetStatusCode
+// GetStatusCode - Getter method
 //
 //	@receiver span
 //	@return int8
@@ -684,7 +658,7 @@ func (span *Span) GetStatusCode() int8 {
 	return span.StatusCode
 }
 
-// SetID
+// SetID - Setter method
 //
 //	@receiver span
 //	@param ID
@@ -694,7 +668,7 @@ func (span *Span) SetID(ID string) *Span {
 	return span
 }
 
-// SetTraceID
+// SetTraceID - Setter method
 //
 //	@receiver span
 //	@param traceID
@@ -704,7 +678,7 @@ func (span *Span) SetTraceID(traceID string) *Span {
 	return span
 }
 
-// SetSpanID
+// SetSpanID - Setter method
 //
 //	@receiver span
 //	@param spanID
@@ -714,7 +688,7 @@ func (span *Span) SetSpanID(spanID string) *Span {
 	return span
 }
 
-// SetParentSpanID
+// SetParentSpanID - Setter method
 //
 //	@receiver span
 //	@param parentSpanID
@@ -724,7 +698,7 @@ func (span *Span) SetParentSpanID(parentSpanID string) *Span {
 	return span
 }
 
-// SetTraceState
+// SetTraceState - Setter method
 //
 //	@receiver span
 //	@param traceState
@@ -734,7 +708,7 @@ func (span *Span) SetTraceState(traceState string) *Span {
 	return span
 }
 
-// SetName
+// SetName - Setter method
 //
 //	@receiver span
 //	@param name
@@ -744,7 +718,7 @@ func (span *Span) SetName(name string) *Span {
 	return span
 }
 
-// SetSpanKind
+// SetSpanKind - Setter method
 //
 //	@receiver span
 //	@param spanKind
@@ -754,7 +728,7 @@ func (span *Span) SetSpanKind(spanKind int8) *Span {
 	return span
 }
 
-// SetStartTimeUnixNano
+// SetStartTimeUnixNano - Setter method
 //
 //	@receiver span
 //	@param startTimeUnixNano
@@ -764,7 +738,7 @@ func (span *Span) SetStartTimeUnixNano(startTimeUnixNano int64) *Span {
 	return span
 }
 
-// SetEndTimeUnixNano
+// SetEndTimeUnixNano - Setter method
 //
 //	@receiver span
 //	@param endTimeUnixNano
@@ -774,7 +748,7 @@ func (span *Span) SetEndTimeUnixNano(endTimeUnixNano int64) *Span {
 	return span
 }
 
-// SetDroppedAttributeCount
+// SetDroppedAttributeCount - Setter method
 //
 //	@receiver span
 //	@param droppedAttributeCount
@@ -784,7 +758,7 @@ func (span *Span) SetDroppedAttributeCount(droppedAttributeCount int) *Span {
 	return span
 }
 
-// SetDroppedEventCount
+// SetDroppedEventCount - Setter method
 //
 //	@receiver span
 //	@param droppedEventCount
@@ -794,7 +768,7 @@ func (span *Span) SetDroppedEventCount(droppedEventCount int) *Span {
 	return span
 }
 
-// SetDroppedLinkCount
+// SetDroppedLinkCount - Setter method
 //
 //	@receiver span
 //	@param droppedLinkCount
@@ -804,7 +778,7 @@ func (span *Span) SetDroppedLinkCount(droppedLinkCount int) *Span {
 	return span
 }
 
-// SetMessage
+// SetMessage - Setter method
 //
 //	@receiver span
 //	@param message
@@ -814,7 +788,7 @@ func (span *Span) SetMessage(message string) *Span {
 	return span
 }
 
-// SetStatusCode
+// SetStatusCode - Setter method
 //
 //	@receiver span
 //	@param statusCode
@@ -824,7 +798,9 @@ func (span *Span) SetStatusCode(statusCode int8) *Span {
 	return span
 }
 
-// SpanAttribute
+// SpanAttribute - struct modeling the Trace Span attributes
+//
+// Contains the [AttributeValue] struct
 type SpanAttribute struct {
 	SpanID         string `avro:"span_id"`
 	Key            string `avro:"key"`
@@ -845,30 +821,11 @@ func NewSpanAttribute(spanID string, key string, attributeValue AttributeValue) 
 	return o
 }
 
-// insertSpanAttribute //
-//
-//	@receiver spanAttribute
-//	@return uuid.UUID
-//	@return error
-func (spanAttribute *SpanAttribute) insertSpanAttribute() (string, error) {
-	if spanAttribute.SpanID == "" {
-		spanAttribute.SpanID = uuid.New().String()
-	}
-
-	statement := fmt.Sprintf(InsertTraceSpanAttribute, Writer.cfg.Schema, spanAttribute.SpanID, spanAttribute.Key, spanAttribute.GetStringValue(), spanAttribute.BoolValue, spanAttribute.GetIntValue(), spanAttribute.GetDoubleValue(), spanAttribute.GetBytesValue())
-	gpudb := Writer.Db
-	_, err := gpudb.ExecuteSqlRaw(context.TODO(), statement, 0, 0, "", nil)
-	if err != nil {
-		return "", err
-	}
-	return spanAttribute.SpanID, nil
-}
-
-// TraceResourceAttribute
+// TraceResourceAttribute - struct modelig the Trace Resource attributes
 type TraceResourceAttribute struct {
 	SpanID         string `avro:"span_id"`
 	Key            string `avro:"key"`
-	AttributeValue `mapstructure:"",squash`
+	AttributeValue `mapstructure:",squash"`
 }
 
 // NewTraceResourceAttribute Constructor for TraceResourceAttribute
@@ -887,7 +844,7 @@ func NewTraceResourceAttribute(SpanID string, key string, attributes AttributeVa
 
 // End TraceResourceAttribute
 
-// TraceScopeAttribute
+// TraceScopeAttribute - struct modeling the Trace Scope attribute
 type TraceScopeAttribute struct {
 	SpanID         string `avro:"span_id"`
 	ScopeName      string `avro:"scope_name"`
@@ -915,7 +872,7 @@ func NewtraceScopeAttribute(SpanID string, key string, scopeName string, scopeVe
 
 // END TraceScopeAttribute
 
-// EventAttribute
+// EventAttribute - struct modeling the Trace Event attributes
 type EventAttribute struct {
 	SpanID         string `avro:"span_id"`
 	EventName      string `avro:"event_name"`
@@ -940,7 +897,7 @@ func NewEventAttribute(spanID string, eventName string, key string, attributes A
 
 // END TraceEventAttribute
 
-// LinkAttribute
+// LinkAttribute - struct modeling the Trace Link attributes
 type LinkAttribute struct {
 	LinkSpanID     string `avro:"link_span_id"`
 	TraceID        string `avro:"trace_id"`
@@ -973,7 +930,7 @@ func NewLinkAttribute(linkSpanID string, key string, traceID string, spanID stri
 
 // Metrics Handling
 
-// Gauge
+// Gauge - struct modeling the Gauge data
 type Gauge struct {
 	GaugeID     string `avro:"gauge_id"`
 	MetricName  string `avro:"metric_name"`
@@ -981,7 +938,7 @@ type Gauge struct {
 	Unit        string `avro:"metric_unit"`
 }
 
-// GaugeDatapoint
+// GaugeDatapoint - struct modeling the Gauge Datapoint
 type GaugeDatapoint struct {
 	GaugeID       string  `avro:"gauge_id"`
 	ID            string  `avro:"id"`
@@ -991,7 +948,7 @@ type GaugeDatapoint struct {
 	Flags         int     `mapstructure:"flags" avro:"flags"`
 }
 
-// GaugeDatapointAttribute
+// GaugeDatapointAttribute - struct modeling the Gauge Datapoint attributes
 type GaugeDatapointAttribute struct {
 	GaugeID        string `avro:"gauge_id"`
 	DatapointID    string `avro:"datapoint_id"`
@@ -999,7 +956,7 @@ type GaugeDatapointAttribute struct {
 	AttributeValue `mapstructure:",squash"`
 }
 
-// GaugeDatapointExemplar
+// GaugeDatapointExemplar - struct modeling a Gauge Datapoint Exemplar
 type GaugeDatapointExemplar struct {
 	GaugeID     string  `avro:"gauge_id"`
 	DatapointID string  `avro:"datapoint_id"`
@@ -1010,7 +967,7 @@ type GaugeDatapointExemplar struct {
 	SpanID      string  `mapstructure:"span_id" avro:"span_id"`
 }
 
-// GaugeDataPointExemplarAttribute
+// GaugeDataPointExemplarAttribute - struct modeling a Gauge Datapoint Exemplar attribute
 type GaugeDataPointExemplarAttribute struct {
 	GaugeID        string `avro:"gauge_id"`
 	DatapointID    string `avro:"datapoint_id"`
@@ -1019,14 +976,14 @@ type GaugeDataPointExemplarAttribute struct {
 	AttributeValue `mapstructure:",squash"`
 }
 
-// GaugeResourceAttribute
+// GaugeResourceAttribute - struct modeling a Gauge resource attribute
 type GaugeResourceAttribute struct {
 	GaugeID        string `avro:"gauge_id"`
 	Key            string `avro:"key"`
 	AttributeValue `mapstructure:",squash"`
 }
 
-// GaugeScopeAttribute
+// GaugeScopeAttribute - struct modeling a Gauge Scope attribute
 type GaugeScopeAttribute struct {
 	GaugeID        string `avro:"gauge_id"`
 	ScopeName      string `avro:"name"`
@@ -1039,7 +996,7 @@ type GaugeScopeAttribute struct {
 
 // Sum
 
-// Sum
+// Sum - struct modeling a Sum metric
 type Sum struct {
 	SumID                  string `avro:"sum_id"`
 	MetricName             string `avro:"metric_name"`
@@ -1049,7 +1006,7 @@ type Sum struct {
 	IsMonotonic            int8   `avro:"is_monotonic"`
 }
 
-// SumDatapoint
+// SumDatapoint - struct modeling a Sum Datapoint
 type SumDatapoint struct {
 	SumID         string  `avro:"sum_id"`
 	ID            string  `avro:"id"`
@@ -1059,7 +1016,7 @@ type SumDatapoint struct {
 	Flags         int     `mapstructure:"flags" avro:"flags"`
 }
 
-// SumDataPointAttribute
+// SumDataPointAttribute - struct modeling a Sum Datapoint attribute
 type SumDataPointAttribute struct {
 	SumID          string `avro:"sum_id"`
 	DatapointID    string `avro:"datapoint_id"`
@@ -1067,7 +1024,7 @@ type SumDataPointAttribute struct {
 	AttributeValue `mapstructure:",squash"`
 }
 
-// SumDatapointExemplar
+// SumDatapointExemplar - struct modeling a Sum Datapoint Exemplar
 type SumDatapointExemplar struct {
 	SumID       string  `avro:"sum_id"`
 	DatapointID string  `avro:"datapoint_id"`
@@ -1078,6 +1035,7 @@ type SumDatapointExemplar struct {
 	SpanID      string  `mapstructure:"span_id" avro:"span_id"`
 }
 
+// SumDataPointExemplarAttribute  - struct modeling a Sum Datapoint Exemplar attribute
 type SumDataPointExemplarAttribute struct {
 	SumID          string `avro:"sum_id"`
 	DatapointID    string `avro:"datapoint_id"`
@@ -1086,14 +1044,14 @@ type SumDataPointExemplarAttribute struct {
 	AttributeValue `mapstructure:",squash"`
 }
 
-// SumResourceAttribute
+// SumResourceAttribute - struct modeling a Sum Resource attribute
 type SumResourceAttribute struct {
 	SumID          string `avro:"sum_id"`
 	Key            string `avro:"key"`
 	AttributeValue `mapstructure:",squash"`
 }
 
-// SumScopeAttribute
+// SumScopeAttribute - struct modeling a Sum Scope attribute
 type SumScopeAttribute struct {
 	SumID          string `avro:"sum_id"`
 	ScopeName      string `avro:"name"`
@@ -1106,7 +1064,7 @@ type SumScopeAttribute struct {
 
 // Histogram
 
-// Histogram
+// Histogram - struct modeling a Histogram metric type
 type Histogram struct {
 	HistogramID            string `avro:"histogram_id"`
 	MetricName             string `avro:"metric_name"`
@@ -1115,7 +1073,7 @@ type Histogram struct {
 	AggregationTemporality int8   `avro:"aggregation_temporality"`
 }
 
-// HistogramDatapoint
+// HistogramDatapoint - struct modeling a Histogram Datapoint
 type HistogramDatapoint struct {
 	HistogramID   string  `avro:"histogram_id"`
 	ID            string  `avro:"id"`
@@ -1128,7 +1086,7 @@ type HistogramDatapoint struct {
 	Flags         int     `avro:"flags"`
 }
 
-// HistogramDataPointAttribute
+// HistogramDataPointAttribute - struct modeling a Histogram Datapoint attribute
 type HistogramDataPointAttribute struct {
 	HistogramID    string `avro:"histogram_id"`
 	DatapointID    string `avro:"datapoint_id"`
@@ -1136,6 +1094,7 @@ type HistogramDataPointAttribute struct {
 	AttributeValue `mapstructure:",squash"`
 }
 
+// HistogramDatapointBucketCount - struct modeling a Histogram Datapoint Bucket Count
 type HistogramDatapointBucketCount struct {
 	HistogramID string `avro:"histogram_id"`
 	DatapointID string `avro:"datapoint_id"`
@@ -1143,6 +1102,7 @@ type HistogramDatapointBucketCount struct {
 	Count       int64  `avro:"count"`
 }
 
+// HistogramDatapointExplicitBound - struct modeling a Histogram Datapoint Explicit Bound
 type HistogramDatapointExplicitBound struct {
 	HistogramID   string  `avro:"histogram_id"`
 	DatapointID   string  `avro:"datapoint_id"`
@@ -1150,7 +1110,7 @@ type HistogramDatapointExplicitBound struct {
 	ExplicitBound float64 `avro:"explicit_bound"`
 }
 
-// HistogramDatapointExemplar
+// HistogramDatapointExemplar - struct modeling a Histogram Datapoint Exemplar
 type HistogramDatapointExemplar struct {
 	HistogramID    string  `avro:"histogram_id"`
 	DatapointID    string  `avro:"datapoint_id"`
@@ -1161,7 +1121,7 @@ type HistogramDatapointExemplar struct {
 	SpanID         string  `mapstructure:"span_id" avro:"span_id"`
 }
 
-// HistogramDataPointExemplarAttribute
+// HistogramDataPointExemplarAttribute - struct modeling a Histogram Datapoint Exemplar attribute
 type HistogramDataPointExemplarAttribute struct {
 	HistogramID    string `avro:"histogram_id"`
 	DatapointID    string `avro:"datapoint_id"`
@@ -1170,14 +1130,14 @@ type HistogramDataPointExemplarAttribute struct {
 	AttributeValue `mapstructure:",squash"`
 }
 
-// HistogramResourceAttribute
+// HistogramResourceAttribute - struct modeling a Histogram Resource Attribute
 type HistogramResourceAttribute struct {
 	HistogramID    string `avro:"histogram_id"`
 	Key            string `avro:"key"`
 	AttributeValue `mapstructure:",squash"`
 }
 
-// HistogramScopeAttribute
+// HistogramScopeAttribute - struct modeling a Histogram Scope Attribute
 type HistogramScopeAttribute struct {
 	HistogramID    string `avro:"histogram_id"`
 	ScopeName      string `avro:"name"`
@@ -1190,7 +1150,7 @@ type HistogramScopeAttribute struct {
 
 // Exponential Histogram
 
-// ExponentialHistogram
+// ExponentialHistogram - struct modeling an Exponential Histogram
 type ExponentialHistogram struct {
 	HistogramID            string `avro:"histogram_id"`
 	MetricName             string `avro:"metric_name"`
@@ -1199,6 +1159,7 @@ type ExponentialHistogram struct {
 	AggregationTemporality int8   `avro:"aggregation_temporality"`
 }
 
+// ExponentialHistogramDatapoint - struct modeling an Exponential Histogram Datapoint
 type ExponentialHistogramDatapoint struct {
 	HistogramID           string  `avro:"histogram_id"`
 	ID                    string  `avro:"id"`
@@ -1215,6 +1176,7 @@ type ExponentialHistogramDatapoint struct {
 	BucketsNegativeOffset int     `avro:"buckets_negative_offset"`
 }
 
+// ExponentialHistogramDataPointAttribute - struct modeling an Exponential Histogram Datapoint attribute
 type ExponentialHistogramDataPointAttribute struct {
 	HistogramID    string `avro:"histogram_id"`
 	DatapointID    string `avro:"datapoint_id"`
@@ -1222,6 +1184,7 @@ type ExponentialHistogramDataPointAttribute struct {
 	AttributeValue `mapstructure:",squash"`
 }
 
+// ExponentialHistogramBucketNegativeCount - struct modeling an Exponential Histogram Bucket Negative Count
 type ExponentialHistogramBucketNegativeCount struct {
 	HistogramID string `avro:"histogram_id"`
 	DatapointID string `avro:"datapoint_id"`
@@ -1229,6 +1192,7 @@ type ExponentialHistogramBucketNegativeCount struct {
 	Count       uint64 `avro:"count"`
 }
 
+// ExponentialHistogramBucketPositiveCount - struct modeling an Exponential Histogram Bucket Positive Count
 type ExponentialHistogramBucketPositiveCount struct {
 	HistogramID string `avro:"histogram_id"`
 	DatapointID string `avro:"datapoint_id"`
@@ -1236,6 +1200,7 @@ type ExponentialHistogramBucketPositiveCount struct {
 	Count       int64  `avro:"count"`
 }
 
+// ExponentialHistogramDatapointExemplar - struct modeling an Exponential Histogram Datapoint Exemplar
 type ExponentialHistogramDatapointExemplar struct {
 	HistogramID    string  `avro:"histogram_id"`
 	DatapointID    string  `avro:"datapoint_id"`
@@ -1246,7 +1211,7 @@ type ExponentialHistogramDatapointExemplar struct {
 	SpanID         string  `mapstructure:"span_id" avro:"span_id"`
 }
 
-// HistogramDataPointExemplarAttribute
+// ExponentialHistogramDataPointExemplarAttribute - struct modeling an Exponential Histogram Datapoint Exemplar attribute
 type ExponentialHistogramDataPointExemplarAttribute struct {
 	HistogramID    string `avro:"histogram_id"`
 	DatapointID    string `avro:"datapoint_id"`
@@ -1255,14 +1220,14 @@ type ExponentialHistogramDataPointExemplarAttribute struct {
 	AttributeValue `mapstructure:",squash"`
 }
 
-// HistogramResourceAttribute
+// ExponentialHistogramResourceAttribute - struct modeling an Exponential Histogram Resource attribute
 type ExponentialHistogramResourceAttribute struct {
 	HistogramID    string `avro:"histogram_id"`
 	Key            string `avro:"key"`
 	AttributeValue `mapstructure:",squash"`
 }
 
-// HistogramScopeAttribute
+// ExponentialHistogramScopeAttribute - struct modeling an Exponential Histogram Scope attribute
 type ExponentialHistogramScopeAttribute struct {
 	HistogramID    string `avro:"histogram_id"`
 	ScopeName      string `avro:"name"`
@@ -1275,6 +1240,7 @@ type ExponentialHistogramScopeAttribute struct {
 
 // Summary
 
+// Summary - struct modeling a Summary type metric
 type Summary struct {
 	SummaryID   string `avro:"summary_id"`
 	MetricName  string `avro:"metric_name"`
@@ -1282,7 +1248,7 @@ type Summary struct {
 	Unit        string `avro:"metric_unit"`
 }
 
-// SummaryDatapoint
+// SummaryDatapoint - struct modeling a Summary Datapoint
 type SummaryDatapoint struct {
 	SummaryID     string  `avro:"summary_id"`
 	ID            string  `avro:"id"`
@@ -1293,7 +1259,7 @@ type SummaryDatapoint struct {
 	Flags         int     `avro:"flags"`
 }
 
-// SummaryDataPointAttribute
+// SummaryDataPointAttribute - struct modeling a Summary Datapoint attribute
 type SummaryDataPointAttribute struct {
 	SummaryID      string `avro:"summary_id"`
 	DatapointID    string `avro:"datapoint_id"`
@@ -1301,6 +1267,7 @@ type SummaryDataPointAttribute struct {
 	AttributeValue `mapstructure:",squash"`
 }
 
+// SummaryDatapointQuantileValues - struct modeling a Summary Datapoint Quantile value
 type SummaryDatapointQuantileValues struct {
 	SummaryID   string  `avro:"summary_id"`
 	DatapointID string  `avro:"datapoint_id"`
@@ -1309,14 +1276,14 @@ type SummaryDatapointQuantileValues struct {
 	Value       float64 `avro:"value"`
 }
 
-// SummaryResourceAttribute
+// SummaryResourceAttribute - struct modeling a Summary Resource attribute
 type SummaryResourceAttribute struct {
 	SummaryID      string `avro:"summary_id"`
 	Key            string `avro:"key"`
 	AttributeValue `mapstructure:",squash"`
 }
 
-// SummaryScopeAttribute
+// SummaryScopeAttribute - struct modeling a Summary Scope attribute
 type SummaryScopeAttribute struct {
 	SummaryID      string `avro:"summary_id"`
 	ScopeName      string `avro:"name"`
@@ -1329,7 +1296,7 @@ type SummaryScopeAttribute struct {
 
 // END Metrics Handling
 
-// persistLogRecord
+// persistLogRecord - method to write Log records into Kinetica
 //
 //	@receiver kiwriter
 //	@param logRecords
@@ -1374,7 +1341,7 @@ func (kiwriter *KiWriter) persistLogRecord(logRecords []kineticaLogRecord) error
 	return multierr.Combine(errs...)
 }
 
-// persistTraceRecord
+// persistTraceRecord - method to write Trace records into Kinetica
 //
 //	@receiver kiwriter
 //	@param traceRecords
@@ -1446,11 +1413,12 @@ func (kiwriter *KiWriter) persistTraceRecord(traceRecords []kineticaTraceRecord)
 	return multierr.Combine(errs...)
 }
 
-// writeMetric
+// writeMetric - a helper method used by different metric persistence methods to write the
+// metric data in order.
 //
-//	@receiver kiwriter
-//	@param metricType
-//	@param tableDataMap
+//	@receiver kiwriter - pointer to [KiWriter]
+//	@param metricType - a [pmetric.MetricTypeGauge] or something else converted to string
+//	@param tableDataMap - a map from table name to the relevant data
 //	@return error
 func (kiwriter *KiWriter) writeMetric(metricType string, tableDataMap *orderedmap.OrderedMap) error {
 
@@ -1791,35 +1759,6 @@ func (kiwriter *KiWriter) persistSummaryRecord(summaryRecords []kineticaSummaryR
 	return multierr.Combine(errs...)
 
 }
-
-// doChunkedInsert - Write each chunk in a separate goroutine
-//
-//	@receiver kiwriter
-//	@param ctx
-//	@param tableName
-//	@param records
-//	@return error
-// func (kiwriter *KiWriter) doChunkedInsert(ctx context.Context, tableName string, records []any) error {
-
-// 	var errs []error
-// 	// Build the final table name with the schema prepended
-// 	var finalTable string
-// 	if len(kiwriter.cfg.Schema) != 0 {
-// 		finalTable = fmt.Sprintf("%s.%s", kiwriter.cfg.Schema, tableName)
-// 	} else {
-// 		finalTable = tableName
-// 	}
-
-// 	kiwriter.logger.Debug("Writing to - ", zap.String("Table", finalTable), zap.Int("Recoord count", len(records)))
-
-// 	recordChunks := ChunkBySize(records, ChunkSize)
-
-// 	for _, recordChunk := range recordChunks {
-// 		_, err := kiwriter.Db.InsertRecordsRaw(context.TODO(), finalTable, recordChunk)
-// 		errs = append(errs, err)
-// 	}
-// 	return multierr.Combine(errs...)
-// }
 
 func (kiwriter *KiWriter) doChunkedInsert(ctx context.Context, tableName string, records []any) error {
 

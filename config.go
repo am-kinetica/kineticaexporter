@@ -73,7 +73,9 @@ func parseNumber(s string, fallback int) int {
 	return fallback
 }
 
-// createLogger
+// createLogger - creates a Logger using user defined configuration from a file.
+// If the file name is not found or there is some error it will create a default
+// logger using the default logger config file named 'config_log_zap.yaml'.
 //
 //	@receiver cfg
 //	@return *zap.Logger

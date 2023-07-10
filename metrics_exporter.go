@@ -86,6 +86,12 @@ func newMetricsExporter(logger *zap.Logger, cfg *Config) (*kineticaMetricsExport
 	return metricsExp, nil
 }
 
+// pushMetricsData - this method is called by the collector to feed the metrics data to the exporter
+//
+//	@receiver e
+//	@param ctx
+//	@param md
+//	@return error
 func (e *kineticaMetricsExporter) pushMetricsData(ctx context.Context, md pmetric.Metrics) error {
 	var metricType pmetric.MetricType
 	var errs []error
@@ -214,7 +220,7 @@ func (e *kineticaMetricsExporter) pushMetricsData(ctx context.Context, md pmetri
 	return multierr.Combine(errs...)
 }
 
-// createSummaryRecord
+// createSummaryRecord - creates a Summary type record
 //
 //	@receiver e
 //	@param resAttr
@@ -363,7 +369,7 @@ func (e *kineticaMetricsExporter) createSummaryRecord(resAttr pcommon.Map, schem
 	return kiSummaryRecord, multierr.Combine(errs...)
 }
 
-// createExponentialHistogramRecord
+// createExponentialHistogramRecord - creates an exponential histogram type record
 //
 //	@receiver e
 //	@param resAttr
@@ -582,7 +588,7 @@ func (e *kineticaMetricsExporter) createExponentialHistogramRecord(resAttr pcomm
 	return kiExpHistogramRecord, multierr.Combine(errs...)
 }
 
-// createHistogramRecord
+// createHistogramRecord - creates a Histogram type record
 //
 //	@receiver e
 //	@param resAttr
@@ -802,7 +808,7 @@ func (e *kineticaMetricsExporter) createHistogramRecord(resAttr pcommon.Map, sch
 	return kiHistogramRecord, multierr.Combine(errs...)
 }
 
-// createSumRecord
+// createSumRecord - creates a SUM type record
 //
 //	@receiver e
 //	@param resAttr
@@ -1008,7 +1014,7 @@ func (e *kineticaMetricsExporter) createSumRecord(resAttr pcommon.Map, schemaURL
 	return kiSumRecord, multierr.Combine(errs...)
 }
 
-// createGaugeRecord
+// createGaugeRecord - creates a Gauge type record
 //
 //	@receiver e
 //	@param resAttr
